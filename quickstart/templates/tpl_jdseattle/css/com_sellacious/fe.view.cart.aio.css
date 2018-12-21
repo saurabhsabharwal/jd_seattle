@@ -123,12 +123,14 @@ div.cart-aio > div.legend {
 	white-space: normal;
 	line-height: 1.6;
 	vertical-align: top;
+	position: relative;
 }
 
 .address-item .address-action {
 	position: relative;
 	z-index: 2;
 	text-align: right;
+	display:block;
 }
 
 .address_name {
@@ -163,7 +165,8 @@ span.address_country {
 	clear: both;
 	text-align: center;
 	position: absolute;
-	bottom: -12px;
+	bottom: 0;
+	left: 0;
 }
 
 .cart_address_box button.disabled,
@@ -173,9 +176,9 @@ span.address_country {
 }
 
 .address-content {
-	position: relative;
 	min-height: 200px;
 	margin-bottom: 10px;
+	position: unset !important;
 }
 
 .address-item .cart_address_buttons {
