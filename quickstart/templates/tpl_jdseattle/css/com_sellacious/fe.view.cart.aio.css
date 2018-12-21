@@ -128,6 +128,7 @@ div.cart-aio > div.legend {
 .address-item .address-action {
 	position: relative;
 	z-index: 2;
+	text-align: right;
 }
 
 .address_name {
@@ -181,16 +182,23 @@ span.address_country {
 	padding: 5px;
 	border-radius: 5px;
 	margin: auto auto;
+	display:flex;
+}
+
+.address-item .cart_address_buttons button {
+	width: 50%;
+	font-size: 12px;
+	float: left;
+	cursor: pointer;
+}
+.address-item button.remove-address {
+	background: transparent;
 }
 
 .address-item:hover {
 	background: #dddddd;
 }
 
-.address-item:hover .cart_address_buttons {
-	background: #ffffff;
-	bottom: 0;
-}
 
 /* Hide tip as default and show only on hover */
 .cart_address_box > .red {
