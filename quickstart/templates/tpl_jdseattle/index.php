@@ -27,6 +27,7 @@ $this->setHtml5(true);
 
 // Add stylesheets
 JHtml::_('stylesheet', 'templates/system/css/system.css', array('version' => 'auto'));
+JHtml::_('stylesheet', 'templates/system/css/system.css', array('version' => 'auto'));
 
 // Astroid Assets
 $template->loadTemplateCSS('custom.css');
@@ -40,6 +41,7 @@ $template->loadTemplateCSS('custom.css');
       <meta name="HandheldFriendly" content="true" />
       <meta name="apple-mobile-web-app-capable" content="YES" />
       <link rel="stylesheet" href="https://use.fontawesome.com/releases/v<?php echo AstroidFrameworkConstants::$fontawesome_version; ?>/css/all.css" >
+	   <link rel="stylesheet" href="templates/tpl_jdseattle/css/com_sellacious/accordion.css">
    <jdoc:include type="head" />
    <?php
    /*
