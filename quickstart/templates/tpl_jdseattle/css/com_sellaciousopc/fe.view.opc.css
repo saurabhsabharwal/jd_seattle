@@ -144,7 +144,7 @@ div.cart-opc > div.legend {
 }
 
 #address-editor .modal-content {
-	max-width: 520px;
+	/*max-width: 520px;*/
 	text-align: left;
 }
 
@@ -179,9 +179,8 @@ div.modal .modal-content {
 
 div.modal[id].fade {
 	width: 100%;
-	height: 100%;
+	/*height: 100%;*/
 	position: fixed;
-	margin-left: 0;
 	left: 0;
 	right: 0;
 	top: 0;
