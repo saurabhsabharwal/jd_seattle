@@ -91,6 +91,7 @@ $template->loadTemplateCSS('custom.css');
    <link rel="stylesheet" href="https://cdn.lineicons.com/1.0.0/LineIcons.min.css">
 </head>
 <body class="<?php echo $template->bodyClass($template->language, $template->direction); ?>">
+<jdoc:include type="message" />
    <?php
    if ($this->params->get('developemnt_mode', 0)) {
       $template->loadLayout('comingsoon');
