@@ -47,21 +47,21 @@
 	visibility: hidden !important;
 }
 
-.cart-opc-container .radio,
-.cart-opc-container .checkbox {
-	padding-left: 20px;
-}
+/*.cart-opc-container .radio,*/
+/*.cart-opc-container .checkbox {*/
+	/*padding-left: 20px;*/
+/*}*/
 
 .cart-opc-container .radio input[type="radio"],
 .cart-opc-container .checkbox input[type="checkbox"] {
-	margin: 3px 0 0 -20px;
+	margin: 3px 0 0 0;
 	width: auto;
 	vertical-align: baseline;
 }
 
 .cart-opc-container .radio input[type="radio"] + label,
 .cart-opc-container .checkbox input[type="checkbox"] + label {
-	display: block;
+	display: inline;
 	padding: 0;
 }
 
@@ -162,7 +162,7 @@ div.modal .modal-body {
 div.modal .modal-content {
 	position: relative;
 	width: 100%;
-	margin: 4% auto 20px;
+	/*margin: 4% auto 20px;*/
 	background-color: #ffffff;
 	border: 1px solid rgba(0, 0, 0, 0.3);
 	-webkit-border-radius: 6px;
