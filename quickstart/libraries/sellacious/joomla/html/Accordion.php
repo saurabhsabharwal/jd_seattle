@@ -18,13 +18,15 @@ use JText;
 use Joomla\Utilities\ArrayHelper;
 
 /**
- * @package  Fix for Joomla Select lists to use JLayouts
+ * @package  Fix for Joomla Accordions to use JLayouts
  *
  * @since    __DEPLOY_VERSION__
  */
 
 class Accordion
 {
+	protected static $loaded;
+
 	/**
 	 * Add javascript support for Bootstrap accordians and insert the accordian
 	 *
@@ -52,6 +54,71 @@ class Accordion
 	{
 		if (!isset(static::$loaded[__METHOD__][$selector]))
 		{
-		$html = \JLayoutHelper::render('sellacious.html.accordion.accordion', get_defined_vars());
-	}}
+			// Setup options object
+			$opt['parent'] = isset($params['parent']) ? ($params['parent'] == true ? '#' . $selector : $params['parent']) : false;
+			$opt['toggle'] = isset($params['toggle']) ? (boolean) $params['toggle'] : !($opt['parent'] === false || isset($params['active']));
+			$onShow = isset($params['onShow']) ? (string) $params['onShow'] : null;
+			$onShown = isset($params['onShown']) ? (string) $params['onShown'] : null;
+			$onHide = isset($params['onHide']) ? (string) $params['onHide'] : null;
+			$onHidden = isset($params['onHidden']) ? (string) $params['onHidden'] : null;
+
+			$options = JHtml::getJSObject($opt);
+
+			$opt['active'] = isset($params['active']) ? (string) $params['active'] : '';
+
+			static::$loaded[__METHOD__][$selector] = $opt;
+
+			$parents = array_key_exists(__METHOD__, static::$loaded) ? array_filter(array_column(static::$loaded[__METHOD__], 'parent')) : array();
+
+			return $html = \JLayoutHelper::render('sellacious.html.accordion.start', get_defined_vars());
+		}
+	}
+
+
+	/**
+	 * Close the current accordion
+	 *
+	 * @return  string  HTML to close the accordian
+	 *
+	 * @since   3.0
+	 */
+	public static function endAccordion()
+	{
+		return $html = \JLayoutHelper::render('sellacious.html.accordion.end', get_defined_vars());
+	}
+
+	/**
+	 * Begins the display of a new accordion slide.
+	 *
+	 * @param   string  $selector  Identifier of the accordion group.
+	 * @param   string  $text      Text to display.
+	 * @param   string  $id        Identifier of the slide.
+	 * @param   string  $class     Class of the accordion group.
+	 *
+	 * @return  string  HTML to add the slide
+	 *
+	 * @since   3.0
+	 */
+	public static function addSlide($selector, $text, $id, $class = '')
+	{
+		$in = (static::$loaded[__CLASS__ . '::startAccordion'][$selector]['active'] == $id) ? ' in' : '';
+		$collapsed = (static::$loaded[__CLASS__ . '::startAccordion'][$selector]['active'] == $id) ? '' : ' collapsed';
+		$parent = static::$loaded[__CLASS__ . '::startAccordion'][$selector]['parent'] ?
+			' data-parent="' . static::$loaded[__CLASS__ . '::startAccordion'][$selector]['parent'] . '"' : '';
+		$class = (!empty($class)) ? ' ' . $class : '';
+
+		return $html = \JLayoutHelper::render('sellacious.html.accordion.addslide', get_defined_vars());
+	}
+
+	/**
+	 * Close the current slide
+	 *
+	 * @return  string  HTML to close the slide
+	 *
+	 * @since   3.0
+	 */
+	public static function endSlide()
+	{
+		return $html = \JLayoutHelper::render('sellacious.html.accordion.endslide', get_defined_vars());
+	}
 }
