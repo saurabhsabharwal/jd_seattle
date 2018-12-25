@@ -51,6 +51,7 @@
 	overflow: hidden;
 	padding: 10px 0;
 	right: 0;
+	left:unset;
 	text-align: left;
 	top: 100%;
 	width: 300px;
@@ -77,7 +78,7 @@
 
 .mod-sellacious-cart .mod-cart-ul li.mod-products-list {
 	max-height: 400px;
-	overflow-y: scroll;
+	overflow-y: auto;
 }
 
 .mod-sellacious-cart .mod-cart-ul li.mod-total {
