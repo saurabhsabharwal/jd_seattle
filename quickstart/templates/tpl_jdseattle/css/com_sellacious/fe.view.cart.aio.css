@@ -629,6 +629,11 @@ fieldset.radio > label {
 	border-top: none;
 }
 
+.table.timings-table th,
+.table.timings-table td {
+	min-width: 100px;
+}
+
 #cart-aio-container .aio-message-container {
 	clear: both;
 	text-align: left;
@@ -734,4 +739,14 @@ div.fieldset-inner {
 ul.item-errors {
 	list-style-type: none;
 	margin: 0;
+}
+
+.control-group .controls .btn-group-toggle .btn.active {
+	background: #00B233;
+	border-color: #04a933;
+	color: #fff;
+}
+.control-group .controls .btn-group-toggle .btn {
+	float: left;
+	padding: 5px 35px;
 }
