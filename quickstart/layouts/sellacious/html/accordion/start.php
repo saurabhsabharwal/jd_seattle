@@ -48,7 +48,7 @@ if (\$parent) \$parent.find('[data-toggle=collapse][data-parent=' + parent + ']'
 $script[] = "});";
 
 // Attach accordion to document
-//JFactory::getDocument()->addScriptDeclaration(implode("\n", $script));
+JFactory::getDocument()->addScriptDeclaration(implode("\n", $script));
 
 echo '<div id="' . $selector . '" class="accordion">';
 

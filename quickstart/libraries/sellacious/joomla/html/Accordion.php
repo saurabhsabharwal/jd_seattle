@@ -101,11 +101,11 @@ class Accordion
 	 */
 	public static function addSlide($selector, $text, $id, $class = '')
 	{
-		$in = (static::$loaded[__CLASS__ . '::startAccordion'][$selector]['active'] == $id) ? ' in' : '';
-		$collapsed = (static::$loaded[__CLASS__ . '::startAccordion'][$selector]['active'] == $id) ? '' : ' collapsed';
-		$parent = static::$loaded[__CLASS__ . '::startAccordion'][$selector]['parent'] ?
-			' data-parent="' . static::$loaded[__CLASS__ . '::startAccordion'][$selector]['parent'] . '"' : '';
-		$class = (!empty($class)) ? ' ' . $class : '';
+		$accordion = static::$loaded[__CLASS__ . '::startAccordion'][$selector];
+		$in        = ($accordion['active'] == $id) ? ' show' : '';
+		$collapsed = ($accordion['active'] == $id) ? '' : ' collapsed';
+		$parent    = $accordion['parent'] ? ' data-parent="' . $accordion['parent'] . '"' : '';
+		$class     = (!empty($class)) ? ' ' . $class : '';
 
 		return $html = \JLayoutHelper::render('sellacious.html.accordion.addslide', get_defined_vars());
 	}
