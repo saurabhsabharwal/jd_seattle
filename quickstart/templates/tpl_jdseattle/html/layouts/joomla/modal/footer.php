@@ -9,6 +9,7 @@
 
 defined('JPATH_BASE') or die;
 
+/** @var  array  $displayData  */
 extract($displayData);
 
 /**
@@ -31,16 +32,7 @@ extract($displayData);
  * @param   string  $body      Markup for the modal body. Appended after the <iframe> if the URL option is set
  *
  */
-
-$bodyClass = 'modal-body';
-
-$bodyHeight = isset($params['bodyHeight']) ? round((int) $params['bodyHeight'], -1) : '';
-
-if ($bodyHeight && $bodyHeight >= 20 && $bodyHeight < 90)
-{
-	$bodyClass .= ' jviewport-height' . $bodyHeight;
-}
 ?>
-<div class="<?php echo $bodyClass; ?>">
-	<?php echo $body; ?>
+<div class="modal-footer">
+	<?php echo $params['footer']; ?>
 </div>

@@ -9,6 +9,7 @@
 
 defined('JPATH_BASE') or die;
 
+/** @var  array  $displayData  */
 extract($displayData);
 
 /**
@@ -29,9 +30,15 @@ extract($displayData);
  *                             - bodyHeight   int      Optional height of the modal body in viewport units (vh)
  *                             - modalWidth   int      Optional width of the modal in viewport units (vh)
  * @param   string  $body      Markup for the modal body. Appended after the <iframe> if the URL option is set
- *
  */
 ?>
-<div class="modal-footer">
-	<?php echo $params['footer']; ?>
+<div class="modal-header">
+	<?php if (isset($params['title'])) : ?>
+	<h5 class="modal-title" id="<?php echo $selector; ?>Label"><?php echo $params['title']; ?></h5>
+	<?php endif; ?>
+	<?php if (!isset($params['closeButton']) || $params['closeButton']) : ?>
+	<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+		<span aria-hidden="true">&times;</span>
+	</button>
+	<?php endif; ?>
 </div>

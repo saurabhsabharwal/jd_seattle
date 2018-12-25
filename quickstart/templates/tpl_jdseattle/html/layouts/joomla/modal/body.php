@@ -9,6 +9,7 @@
 
 defined('JPATH_BASE') or die;
 
+/** @var  array  $displayData  */
 extract($displayData);
 
 /**
@@ -31,14 +32,10 @@ extract($displayData);
  * @param   string  $body      Markup for the modal body. Appended after the <iframe> if the URL option is set
  *
  */
+$bodyClass = 'modal-body';
+
+// $bodyHeight = isset($params['bodyHeight']) ? round((int) $params['bodyHeight'], -1) : '';
 ?>
-<div class="modal-header">
-	<?php if (!isset($params['closeButton']) || $params['closeButton']) : ?>
-		<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-			<span aria-hidden="true">&times;</span>
-		</button>
-	<?php endif; ?>
-	<?php if (isset($params['title'])) : ?>
-		<h3 class="modal-title"><?php echo $params['title']; ?></h3>
-	<?php endif; ?>
+<div class="<?php echo $bodyClass; ?>">
+	<?php echo $body; ?>
 </div>
