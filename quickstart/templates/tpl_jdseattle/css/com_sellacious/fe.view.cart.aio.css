@@ -405,9 +405,11 @@ div.select2-drop, div.select2-drop-active {
 }
 
 .coupon-group .btn-apply-coupon {
-	height: 30px;
+	height: auto;
 	color: #fff;
 	text-shadow: none;
+	padding: 3px 10px;
+	font-size: 15px;
 }
 
 .coupon-message {
@@ -749,4 +751,11 @@ ul.item-errors {
 .control-group .controls .btn-group-toggle .btn {
 	float: left;
 	padding: 5px 35px;
+}
+
+#cart-aio-payment #payment_accordion .accordion-group {
+	border-radius: 0;
+}
+#cart-aio-payment #payment-methods {
+	padding: 10px 25px;
 }
