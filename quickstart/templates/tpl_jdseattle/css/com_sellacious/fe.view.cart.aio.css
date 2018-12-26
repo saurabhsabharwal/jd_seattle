@@ -186,7 +186,8 @@ span.address_country {
 	position: unset !important;
 }
 
-#cart-aio-container .address-content {
+#cart-aio-container .address-content,
+#cart-opc-container .address-content{
 	min-height: 180px;
 }
 
@@ -198,10 +199,11 @@ span.address_country {
 }
 
 .address-item .cart_address_buttons button {
-	width: 50%;
+	width: 48%;
 	font-size: 12px;
 	float: left;
 	cursor: pointer;
+	margin: 0 auto;
 }
 .address-item button.remove-address {
 	background: transparent;
@@ -721,7 +723,7 @@ fieldset.radio > label {
 
 #address-editor .modal-body {
 	padding: 25px;
-	max-height: 400px !important;
+	max-height: 350px !important;
 	overflow-y: auto !important;
 }
 
@@ -776,11 +778,15 @@ ul.item-errors {
 }
 
 
-#addresses #address-editor #address-modals .modal {
+#address-editor #address-modals .modal {
 	padding-right: 0 !important;
 }
 
-#addresses #address-editor #address-modals .modal .modal-dialog{
+#address-editor #address-modals .modal .modal-dialog{
+	margin: 0 auto;
+}
+
+#address-editor #address-modals .modal .modal-content{
 	max-width: 800px;
 	margin: 0 auto;
 }
@@ -788,7 +794,13 @@ ul.item-errors {
 #address-editor .address-form .control-group {
 	margin-bottom: 20px;
 }
+#cart-aio-address #address-editor .address-form .control-group {
+	display: flex;
+}
 .select2-container-multi .select2-choices {
 	 background-image: none;
 	border-radius: 0.25rem;
+}
+#address-editor .address-form .control-group select {
+	height: calc(2.25rem + 2px);
 }

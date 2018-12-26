@@ -265,9 +265,9 @@ div.modal[id].fade {
 	margin: auto auto;
 }
 
-.address-item:hover {
-	background: #dddddd;
-}
+/*.address-item:hover {*/
+	/*background: #dddddd;*/
+/*}*/
 
 
 /* Hide tip as default and show only on hover */
