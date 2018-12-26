@@ -77,7 +77,7 @@ div.cart-aio > div.legend {
 #address-editor .controls {
 	padding-right: 6px;
 	margin-right: 6px;
-	float: left;
+	/*float: left;*/
 	width: calc(100% - 130px);
 }
 
@@ -383,6 +383,10 @@ div.select2-container .select2-choice span.select2-arrow {
 
 div.select2-container .select2-choice {
 	border: 1px solid #dfdfdf;
+	height: calc(2.25rem + 2px);
+}
+.select2-container .select2-choice > .select2-chosen {
+	padding: 6px;
 }
 
 div.select2-drop, div.select2-drop-active {
@@ -708,6 +712,8 @@ fieldset.radio > label {
 
 #address-editor .modal-body {
 	padding: 25px;
+	max-height: 400px !important;
+	overflow-y: auto !important;
 }
 
 #modal-cart .modal-content {
@@ -758,4 +764,18 @@ ul.item-errors {
 }
 #cart-aio-payment #payment-methods {
 	padding: 10px 25px;
+}
+
+
+#addresses #address-editor #address-modals .modal {
+	padding-right: 0 !important;
+}
+
+#addresses #address-editor #address-modals .modal .modal-dialog{
+	max-width: 800px;
+	margin: 0 auto;
+}
+
+#address-editor .address-form .control-group {
+	margin-bottom: 20px;
 }
