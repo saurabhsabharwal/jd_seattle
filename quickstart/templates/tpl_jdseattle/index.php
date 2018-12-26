@@ -27,7 +27,6 @@ $this->setHtml5(true);
 
 // Add stylesheets
 JHtml::_('stylesheet', 'templates/system/css/system.css', array('version' => 'auto'));
-JHtml::_('stylesheet', 'templates/system/css/system.css', array('version' => 'auto'));
 
 // Astroid Assets
 $template->loadTemplateCSS('custom.css');
@@ -91,7 +90,6 @@ $template->loadTemplateCSS('custom.css');
    <link rel="stylesheet" href="https://cdn.lineicons.com/1.0.0/LineIcons.min.css">
 </head>
 <body class="<?php echo $template->bodyClass($template->language, $template->direction); ?>">
-<jdoc:include type="message" />
    <?php
    if ($this->params->get('developemnt_mode', 0)) {
       $template->loadLayout('comingsoon');
@@ -102,6 +100,7 @@ $template->loadTemplateCSS('custom.css');
    }
    ?>
 <jdoc:include type="modules" name="debug" />
+<jdoc:include type="message" />
 <?php $template->body(); ?>
 </body>
 </html>
