@@ -127,10 +127,15 @@ div.cart-aio > div.legend {
 }
 
 .address-item .address-action {
-	position: relative;
+	display: none !important;
+	position: absolute;
 	z-index: 2;
 	text-align: right;
 	display:block;
+}
+
+.address-item .address-action .btn:first-child {
+	padding: 0;
 }
 
 .address_name {
@@ -176,9 +181,13 @@ span.address_country {
 }
 
 .address-content {
-	min-height: 200px;
+	min-height: 160px;
 	margin-bottom: 10px;
 	position: unset !important;
+}
+
+#cart-aio-container .address-content {
+	min-height: 180px;
 }
 
 .address-item .cart_address_buttons {
@@ -198,8 +207,8 @@ span.address_country {
 	background: transparent;
 }
 
-.address-item:hover {
-	background: #dddddd;
+.address-item:hover .address-action{
+	display: block !important;
 }
 
 
@@ -778,4 +787,8 @@ ul.item-errors {
 
 #address-editor .address-form .control-group {
 	margin-bottom: 20px;
+}
+.select2-container-multi .select2-choices {
+	 background-image: none;
+	border-radius: 0.25rem;
 }
