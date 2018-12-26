@@ -305,17 +305,8 @@ class SellaciousHelper
 		{
 			require_once dirname(__DIR__) . '/joomla/html/calendar.php';
 
-			//Accordion Override
-			require_once dirname(__DIR__) . '/joomla/html/Accordion.php';
-
 			JHtml::register('calendar', array('Sellacious\Html\Calendar', 'calendar'));
 			JHtml::register('behavior.calendar', array('Sellacious\Html\Calendar', 'behaviorCalendar'));
-
-			//Accordion Overrides
-			JHtml::register('bootstrap.startAccordion', array('Sellacious\Html\Accordion', 'startAccordion'));
-			JHtml::register('bootstrap.endAccordion', array('Sellacious\Html\Accordion', 'endAccordion'));
-			JHtml::register('bootstrap.addSlide', array('Sellacious\Html\Accordion', 'addSlide'));
-			JHtml::register('bootstrap.endSlide', array('Sellacious\Html\Accordion', 'endSlide'));
 		}
 	}
 }
