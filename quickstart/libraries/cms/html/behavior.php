@@ -39,7 +39,6 @@ abstract class JHtmlBehavior
 	 */
 	public static function framework($extras = false, $debug = null)
 	{
-		return;
 		$type = $extras ? 'more' : 'core';
 
 		// Only load once

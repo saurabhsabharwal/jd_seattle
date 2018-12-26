@@ -311,7 +311,6 @@ class SellaciousHelper
 			JHtml::register('calendar', array('Sellacious\Html\Calendar', 'calendar'));
 			JHtml::register('behavior.calendar', array('Sellacious\Html\Calendar', 'behaviorCalendar'));
 
-
 			//Accordion Overrides
 			JHtml::register('bootstrap.startAccordion', array('Sellacious\Html\Accordion', 'startAccordion'));
 			JHtml::register('bootstrap.endAccordion', array('Sellacious\Html\Accordion', 'endAccordion'));
