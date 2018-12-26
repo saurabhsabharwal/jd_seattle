@@ -650,7 +650,9 @@ INSERT INTO `#__extensions` (`extension_id`, `package_id`, `name`, `type`, `elem
 (600, 802, 'English (en-GB)', 'language', 'en-GB', '', 0, 1, 1, 1, '', '', '', '', 0, '0000-00-00 00:00:00', 0, 0),
 (601, 802, 'English (en-GB)', 'language', 'en-GB', '', 1, 1, 1, 1, '', '', '', '', 0, '0000-00-00 00:00:00', 0, 0),
 (700, 0, 'files_joomla', 'file', 'joomla', '', 0, 1, 1, 1, '', '', '', '', 0, '0000-00-00 00:00:00', 0, 0),
-(802, 0, 'English (en-GB) Language Pack', 'package', 'pkg_en-GB', '', 0, 1, 1, 1, '', '', '', '', 0, '0000-00-00 00:00:00', 0, 0);
+(802, 0, 'English (en-GB) Language Pack', 'package', 'pkg_en-GB', '', 0, 1, 1, 1, '', '', '', '', 0, '0000-00-00 00:00:00', 0, 0),
+(10176, 0, 'System - MooKiller', 'plugin', 'mookiller', 'system', 0, 0, 1, 0, '{\"name\":\"System - MooKiller\",\"type\":\"plugin\",\"creationDate\":\"July 2016\",\"author\":\"Izhar Aazmi\",\"copyright\":\"Copyright (C) 2016 Bhartiy Web Technologies. All rights reserved.\",\"authorEmail\":\"info@bhartiy.com\",\"authorUrl\":\"www.bhartiy.com\",\"version\":\"1.0.0\",\"description\":\"<div class=\\\"alert alert-info\\\"><h5>MooKiller Plugin<\\/h5>\\n\\tPrevent loading of MooTools library from Joomla core into sellacious backoffice. <br\\/>\\n\\tDoesn\'t affect your site Front-end or Back-end in any manner.\\n\\t<\\/div>\",\"group\":\"\",\"filename\":\"mookiller\"}', '{}', '', '', 0, '0000-00-00 00:00:00', 0, 0);
+
 
 -- --------------------------------------------------------
 
