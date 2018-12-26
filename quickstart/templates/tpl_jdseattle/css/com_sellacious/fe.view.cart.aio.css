@@ -782,11 +782,11 @@ ul.item-errors {
 	padding-right: 0 !important;
 }
 
-#address-editor #address-modals .modal .modal-dialog{
+#address-editor .modal .modal-dialog{
 	margin: 0 auto;
 }
 
-#address-editor #address-modals .modal .modal-content{
+#address-editor .modal .modal-content{
 	max-width: 800px;
 	margin: 0 auto;
 }
