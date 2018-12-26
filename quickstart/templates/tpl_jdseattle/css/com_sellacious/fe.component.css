@@ -845,3 +845,16 @@ button.btn-wishlist .fa-heart {
 	padding: 0px;
 	margin: 0px 5px;
 }
+
+#modal-cart {
+	overflow: hidden;
+}
+
+#modal-cart .modal-body {
+	max-height: 400px !important;
+	overflow-y: auto !important;
+}
+
+#modal-cart .modal-dialog {
+	margin: 0 auto;
+}
