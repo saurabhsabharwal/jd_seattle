@@ -37,7 +37,7 @@ textarea.code {
 	vertical-align: top;
 }
 small {
-	font-size: 85%;
+	font-size: 65%;
 	color: #777;
 }
 .red {
@@ -824,4 +824,24 @@ button.btn-wishlist .fa-heart {
 	position: absolute;
 	right: 20px;
 	top: 16px;
+}
+
+.control-group {
+	margin-bottom: 15px;
+}
+
+.control-group legend {
+	margin-top:20px;
+}
+
+.control-group .col-md-12 {
+	padding: 0;
+}
+
+#profile_accordion .accordion-group .accordion-inner table.timings-table select {
+	font-size: 12px;
+	width: 46%;
+	display: inline-block;
+	padding: 0px;
+	margin: 0px 5px;
 }
