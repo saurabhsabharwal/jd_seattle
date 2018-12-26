@@ -804,3 +804,8 @@ ul.item-errors {
 #address-editor .address-form .control-group select {
 	height: calc(2.25rem + 2px);
 }
+
+.coupon-group input.coupon-code {
+	flex: unset;
+	width: auto;
+}
