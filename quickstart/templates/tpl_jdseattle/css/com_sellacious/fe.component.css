@@ -872,3 +872,8 @@ button.btn-wishlist .fa-heart {
 .view-addresses .select2-drop-mask {
 	z-index: 9998;
 }
+
+[id^="sell-modal-"].modal .modal-dialog,
+[id*=" sell-modal-"].modal .modal-dialog {
+	max-width: 100%;
+}
