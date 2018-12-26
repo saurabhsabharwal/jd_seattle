@@ -257,6 +257,7 @@ div.modal {
 	min-height: 420px;
 	left: 0;
 	right: 0;
+	bottom: unset;
 	margin: 50px auto 20px;
 	border-radius: 0;
 	display: none;
@@ -848,6 +849,7 @@ button.btn-wishlist .fa-heart {
 
 #modal-cart {
 	overflow: hidden;
+	min-height: 345px;
 }
 
 #modal-cart .modal-body {
@@ -857,6 +859,8 @@ button.btn-wishlist .fa-heart {
 
 #modal-cart .modal-dialog {
 	margin: 0 auto;
+	max-width: 100%;
+	min-height: 345px;
 }
 
 .select2-drop {

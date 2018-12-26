@@ -730,6 +730,7 @@ fieldset.radio > label {
 #modal-cart .modal-content {
 	max-width: 1080px;
 	text-align: left;
+	min-height: 345px;
 }
 
 .payment-fee {
