@@ -858,3 +858,17 @@ button.btn-wishlist .fa-heart {
 #modal-cart .modal-dialog {
 	margin: 0 auto;
 }
+
+.select2-drop {
+	z-index: 991;
+}
+.select2-drop-mask {
+	z-index: 990;
+}
+
+.view-addresses .select2-drop {
+	z-index: 9999;
+}
+.view-addresses .select2-drop-mask {
+	z-index: 9998;
+}
