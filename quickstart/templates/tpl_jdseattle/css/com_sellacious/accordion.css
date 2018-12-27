@@ -3,6 +3,12 @@
 	margin: 0 auto;
 }
 
+@media only screen and (max-width: 768px) {
+	#profile_accordion {
+		width: 95%;
+	}
+}
+
 .accordion-group {
 	position: relative;
 	display: -ms-flexbox;
