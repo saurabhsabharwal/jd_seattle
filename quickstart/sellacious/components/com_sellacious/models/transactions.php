@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -238,7 +238,7 @@ class SellaciousModelTransactions extends SellaciousModelList
 			{
 				if (is_numeric($search_value))
 				{
-					$query->where('u.id = ' . (int) $search_value);
+					$query->where(sprintf('(a.user_id = %1$d OR (a.context = %2$s AND a.context_id = %1$d))', $search_value, $db->q('user.id')));
 				}
 			}
 			elseif ($search_in == 'created_by')

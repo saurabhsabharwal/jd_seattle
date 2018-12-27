@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -18,9 +18,10 @@ $template = $displayData;
 
 /** @var  AbstractImporter  $importer */
 $importer = $this->getImporter();
+$import   = $this->getActiveImport();
+$aliases  = $import ? $import->mapping->toArray() : array();
 $headers  = $importer->getHeaders();
-$require  = $this->getState('require') ?: array();
-$aliases  = $this->getState('mapping') ?: array();
+$require  = array();
 
 if ($template->id && count($template->mapping))
 {

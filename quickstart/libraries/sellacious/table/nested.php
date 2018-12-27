@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -15,7 +15,7 @@ use Joomla\Utilities\ArrayHelper;
 /**
  * Sellacious Nested Table base class
  *
- * @since  2.0
+ * @since  1.0.0
  */
 class SellaciousTableNested extends JTableNested
 {
@@ -23,11 +23,14 @@ class SellaciousTableNested extends JTableNested
 	 * List of fields that needs to be JSON encoded before saving and decoded on load
 	 * Constructor of child class is supposed to set this.
 	 *
+	 * @since   1.0.0
 	 */
 	protected $_array_fields = array();
 
 	/**
 	 * @var  SellaciousHelper
+	 *
+	 * @since   1.0.0
 	 */
 	protected $helper;
 
@@ -47,6 +50,8 @@ class SellaciousTableNested extends JTableNested
 	{
 		parent::__construct($table, $key, $db);
 
+		$this->setColumnAlias('published', 'state');
+
 		$this->helper = SellaciousHelper::getInstance();
 	}
 
@@ -59,9 +64,11 @@ class SellaciousTableNested extends JTableNested
 	 * @param   string $prefix An optional prefix for the table class name.
 	 * @param   array  $config An optional array of configuration values for the JTable object.
 	 *
-	 * @return  SellaciousTable  A JTable object if found or boolean false if one could not be found.
+	 * @return  SellaciousTable|JTable  A JTable object if found or boolean false if one could not be found.
 	 *
 	 * @see JTable::addIncludePath()
+	 *
+	 * @since   1.0.0
 	 */
 	public static function getInstance($type, $prefix = 'SellaciousTable', $config = array())
 	{
@@ -394,7 +401,9 @@ class SellaciousTableNested extends JTableNested
 	/**
 	 * Returns an array of conditions to meet for the uniqueness of the row, of course other than the primary key
 	 *
-	 * @return  array  key-value pairs to check the table row uniqueness against the row being checked
+	 * @return  array  Key-value pairs to check the table row uniqueness against the row being checked
+	 *
+	 * @since   1.0.0
 	 */
 	protected function getUniqueConditions()
 	{
@@ -407,10 +416,12 @@ class SellaciousTableNested extends JTableNested
 	/**
 	 * Get Custom error message for each uniqueness error
 	 *
-	 * @param   array  $uk_index  Array index/identifier of unique keys returned by getUniqueConditions
-	 * @param   JTable $table     Table object with which conflicted
+	 * @param   string  $uk_index  Array index/identifier of unique keys returned by getUniqueConditions
+	 * @param   JTable  $table     Table object with which conflicted
 	 *
-	 * @return bool|string
+	 * @return  bool|string
+	 *
+	 * @since   1.0.0
 	 */
 	protected function getUniqueError($uk_index, JTable $table)
 	{
@@ -433,7 +444,9 @@ class SellaciousTableNested extends JTableNested
 	/**
 	 * Process array fields to convert them to json for database storage
 	 *
-	 * @param $array
+	 * @param   $array
+	 *
+	 * @since   1.0.0
 	 */
 	public function buildJson(&$array)
 	{
@@ -450,6 +463,8 @@ class SellaciousTableNested extends JTableNested
 	 * Process array fields to convert them from json database storage to array type
 	 *
 	 * @param   object $input
+	 *
+	 * @since   1.0.0
 	 */
 	public function parseJson(&$input)
 	{
@@ -464,14 +479,17 @@ class SellaciousTableNested extends JTableNested
 	}
 
 	/**
-	 * Overriden to convert JError to Exception
+	 * Override to convert JError to Exception
 	 *
-	 * @param mixed  $src
-	 * @param string $orderingFilter
-	 * @param string $ignore
+	 * @param   mixed   $src
+	 * @param   string  $orderingFilter
+	 * @param   string  $ignore
 	 *
-	 * @return bool
-	 * @throws Exception
+	 * @return  bool
+	 *
+	 * @throws  Exception
+	 *
+	 * @since   1.0.0
 	 */
 	public function save($src, $orderingFilter = '', $ignore = '')
 	{

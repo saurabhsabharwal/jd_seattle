@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -12,6 +12,7 @@ use Joomla\CMS\Form\Form;
 use Joomla\Utilities\ArrayHelper;
 use Sellacious\Import\AbstractImporter;
 use Sellacious\Import\ImportHelper;
+use Sellacious\Import\ImportRecord;
 use Sellacious\Media\Upload\Uploader;
 
 defined('_JEXEC') or die;
@@ -52,12 +53,14 @@ abstract class SellaciousPluginImporter extends SellaciousPlugin
 	{
 		parent::__construct($subject, $config);
 
-		$this->tmpPath = $this->app->get('tmp_path');
+		$this->tmpPath = JFactory::getConfig()->get('tmp_path');
 
 		if (!is_writable($this->tmpPath))
 		{
 			$this->tmpPath = JPATH_SITE . '/tmp';
 		}
+
+		JTable::addIncludePath(JPATH_SELLACIOUS . '/components/com_importer/tables');
 	}
 
 	/**
@@ -122,10 +125,49 @@ abstract class SellaciousPluginImporter extends SellaciousPlugin
 	 * @return  mixed
 	 *
 	 * @since   1.5.2
+	 *
+	 * @deprecated   Use getActive() directly
 	 */
 	public function getState($key)
 	{
-		return $this->app->getUserState('com_importer.import.state.' . $key);
+		$import = $this->getActiveImport();
+
+		return $import && property_exists($import, $key) ? $import->$key : null;
+	}
+
+	/**
+	 * Method to get the active import job record
+	 *
+	 * @return  ImportRecord
+	 *
+	 * @since   1.6.1
+	 */
+	public function getActiveImport()
+	{
+		static $import = null;
+
+		if (!$import)
+		{
+			try
+			{
+				if (class_exists('SellaciousImporterCli'))
+				{
+					$input    = new \Joomla\Input\Cli;
+					$importId = $input->getInt('import_id');
+				}
+				else
+				{
+					$importId = $this->app->input->getInt('id');
+				}
+
+				$import = ImportHelper::getImport($importId);
+			}
+			catch (Exception $e)
+			{
+			}
+		}
+
+		return $import;
 	}
 
 	/**
@@ -146,7 +188,7 @@ abstract class SellaciousPluginImporter extends SellaciousPlugin
 
 		$uploader = new Uploader($extensions);
 		$uploader->select($control, 1);
-		$uploader->moveTo($this->tmpPath . '/import-stage', 'import-@@-' . $now, false);
+		$uploader->moveTo($this->tmpPath . '/import-stage', '@@/import-' . $now, false);
 
 		$files = $uploader->getSelected();
 
@@ -167,30 +209,36 @@ abstract class SellaciousPluginImporter extends SellaciousPlugin
 	 */
 	protected function getImporter()
 	{
+		$importer = null;
+
 		try
 		{
-			$importer = ImportHelper::getImporter($this->getState('handler'));
-			$options  = (array) $this->getState('options');
+			$import = $this->getActiveImport();
 
-			$importer->load($this->getState('path'));
-
-			foreach ($options as $key => $value)
+			if ($import)
 			{
-				$importer->setOption($key, $value);
-			}
+				$options  = $import->options->toArray();
+				$importer = ImportHelper::getImporter($import->handler);
 
-			return $importer;
+				$importer->load($import->path);
+
+				foreach ($options as $key => $value)
+				{
+					$importer->setOption($key, $value);
+				}
+			}
 		}
 		catch (Exception $e)
 		{
 			// But we should detect it earlier! How?
-			$this->app->enqueueMessage($e->getMessage(), 'error');
-			$this->app->setUserState('com_importer.import.state', null);
-
-			$this->app->redirect(JRoute::_('index.php?option=com_importer'));
-
-			return null;
+			if (!class_exists('SellaciousImporterCli'))
+			{
+				$this->app->enqueueMessage($e->getMessage(), 'error');
+				$this->app->redirect(JRoute::_('index.php?option=com_importer'));
+			}
 		}
+
+		return $importer;
 	}
 
 	/**
@@ -207,7 +255,7 @@ abstract class SellaciousPluginImporter extends SellaciousPlugin
 	{
 		$form = null;
 
-		if (isset($template->override) && $template->override != 0)
+		if (isset($template->override) && (int) $template->override === 1)
 		{
 			JFormHelper::addFormPath($this->pluginPath . '/forms');
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -103,6 +103,19 @@ class SellaciousModelProducts extends SellaciousModelList
 			if (!$this->helper->access->check('product.list'))
 			{
 				$form->removeField('seller_uid', 'filter');
+			}
+
+			$defLanguage = JFactory::getLanguage();
+			$tag         = $defLanguage->getTag();
+			$languages   = JLanguageHelper::getContentLanguages();
+
+			$languages = array_filter($languages, function ($item) use ($tag){
+				return ($item->lang_code != $tag);
+			});
+
+			if (!count($languages))
+			{
+				$form->removeField('language', 'filter');
 			}
 		}
 
@@ -260,6 +273,12 @@ class SellaciousModelProducts extends SellaciousModelList
 		else
 		{
 			$query->where('0');
+		}
+
+		// Filter by language
+		if ($language = $this->getState('filter.language'))
+		{
+			$query->where('a.language = ' . $this->_db->quote($language));
 		}
 	}
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -326,7 +326,7 @@ abstract class SellaciousHelperBase
 			// Reset ordering if specified in request
 			if (array_key_exists('list.order', $filters))
 			{
-				$query->clear('order')->order($filters['list.order']);
+				$query->clear(('order'))->order($filters['list.order']);
 				unset($filters['list.order']);
 			}
 
@@ -364,7 +364,7 @@ abstract class SellaciousHelperBase
 			// Additional Grouping, if any specified
 			if (array_key_exists('list.group.reset', $filters))
 			{
-				$query->clear('group');
+				$query->clear(('group'));
 			}
 
 			if (array_key_exists('list.group', $filters))

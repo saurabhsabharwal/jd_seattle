@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -95,6 +95,8 @@ class SellaciousTable extends JTable
 	public function __construct($table, $key, $db)
 	{
 		parent::__construct($table, $key, $db);
+
+		$this->setColumnAlias('published', 'state');
 
 		$this->helper = SellaciousHelper::getInstance();
 	}

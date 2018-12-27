@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     Sellacious Hyperlocal Module
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -88,6 +88,47 @@ class ModSellaciousHyperlocalHelper
 			$data = array(
 				'id'      => reset($addressIds),
 				'address' => implode(', ', $address),
+				'lat'     => $lat,
+				'long'    => $lng
+			);
+
+			$app->setUserState('hyperlocal_location', $data);
+			$app->setUserState('filter.store_location_custom', $data['id']);
+			$app->setUserState('filter.store_location_custom_text', $data['address']);
+			$app->setUserState('filter.shippable', $data['id']);
+			$app->setUserState('filter.shippable_text', $data['address']);
+			$app->setUserState('filter.shippable_coordinates', array('lat' => $lat, 'long' => $lng));
+
+			echo new JResponseJson($data, '');
+		}
+		catch (Exception $e)
+		{
+			echo new JResponseJson($e);
+		}
+
+		$app->close();
+	}
+
+	/**
+	 * Ajax Method to set Address from Detected Geolocation
+	 *
+	 * @throws  Exception
+	 *
+	 * @since   1.6.1
+	 */
+	public static function setGeoLocationAjax()
+	{
+		$app     = JFactory::getApplication();
+		$address = $app->input->getString('address', '');
+		$lat     = $app->input->getFloat('lat');
+		$lng     = $app->input->getFloat('long');
+
+		try
+		{
+			// Set address to session/state
+			$data = array(
+				'id'      => 0,
+				'address' => $address,
 				'lat'     => $lat,
 				'long'    => $lng
 			);
@@ -220,15 +261,82 @@ class ModSellaciousHyperlocalHelper
 	 */
 	public static function setBoundsAjax()
 	{
-		$app           = JFactory::getApplication();
-		$hyperlocal    = $app->getUserState('hyperlocal_location', array());
-		$productBounds = $app->input->get('product_bounds', array(), 'Array');
-		$storeBounds   = $app->input->get('store_bounds', array(), 'Array');
+		$app              = JFactory::getApplication();
+		$hyperlocal       = $app->getUserState('hyperlocal_location', array());
+		$productBounds    = $app->input->get('product_bounds', array(), 'Array');
+		$productBoundsMin = $app->input->get('product_bounds_min', array(), 'Array');
+		$storeBounds      = $app->input->get('store_bounds', array(), 'Array');
+		$storeBoundsMin   = $app->input->get('store_bounds_min', array(), 'Array');
+		$minRadius        = $app->input->get('min_radius', 0);
+		$maxRadius        = $app->input->get('max_radius', 0);
+		$timezone         = $app->input->getString('timezone', '');
+		$productBounds    = array_filter($productBounds, 'is_numeric');
+		$productBoundsMin = array_filter($productBoundsMin, 'is_numeric');
+		$storeBounds      = array_filter($storeBounds, 'is_numeric');
+		$storeBoundsMin   = array_filter($storeBoundsMin, 'is_numeric');
 
 		try
 		{
-			$hyperlocal['product_bounds'] = $productBounds;
-			$hyperlocal['store_bounds']   = $storeBounds;
+			if (count($productBounds) < 4 || count($productBoundsMin) < 4 || count($storeBounds) < 4 || count($storeBoundsMin) < 4)
+			{
+				throw new Exception(JText::_('MOD_SELLACIOUS_HYPERLOCAL_GET_ADDRESS_FAILED'));
+			}
+
+			$hyperlocal['product_bounds']     = $productBounds;
+			$hyperlocal['product_bounds_min'] = $productBoundsMin;
+			$hyperlocal['store_bounds']       = $storeBounds;
+			$hyperlocal['store_bounds_min']   = $storeBoundsMin;
+			$hyperlocal['min_radius']         = $minRadius;
+			$hyperlocal['max_radius']         = $maxRadius;
+			$hyperlocal['timezone']           = $timezone;
+			$app->setUserState('hyperlocal_location', $hyperlocal);
+
+			echo new JResponseJson($hyperlocal, '');
+		}
+		catch (Exception $e)
+		{
+			echo new JResponseJson($e);
+		}
+
+		$app->close();
+	}
+
+	/**
+	 * Ajax Method to set Radius Range
+	 *
+	 * @throws  Exception
+	 *
+	 * @since   1.6.1
+	 */
+	public static function setRadiusRangeAjax()
+	{
+		$app              = JFactory::getApplication();
+		$hyperlocal       = $app->getUserState('hyperlocal_location', array());
+		$productBounds    = $app->input->get('product_bounds', array(), 'Array');
+		$productBoundsMin = $app->input->get('product_bounds_min', array(), 'Array');
+		$storeBounds      = $app->input->get('store_bounds', array(), 'Array');
+		$storeBoundsMin   = $app->input->get('store_bounds_min', array(), 'Array');
+		$minRadius        = $app->input->get('min_radius', 0);
+		$maxRadius        = $app->input->get('max_radius', 0);
+
+		$productBounds    = array_filter($productBounds, 'is_numeric');
+		$productBoundsMin = array_filter($productBoundsMin, 'is_numeric');
+		$storeBounds      = array_filter($storeBounds, 'is_numeric');
+		$storeBoundsMin   = array_filter($storeBoundsMin, 'is_numeric');
+
+		try
+		{
+			if (count($productBounds) < 4 || count($productBoundsMin) < 4 || count($storeBounds) < 4 || count($storeBoundsMin) < 4)
+			{
+				throw new Exception(JText::_('MOD_SELLACIOUS_HYPERLOCAL_GET_ADDRESS_FAILED'));
+			}
+
+			$hyperlocal['product_bounds']     = $productBounds;
+			$hyperlocal['product_bounds_min'] = $productBoundsMin;
+			$hyperlocal['store_bounds']       = $storeBounds;
+			$hyperlocal['store_bounds_min']   = $storeBoundsMin;
+			$hyperlocal['min_radius']         = $minRadius;
+			$hyperlocal['max_radius']         = $maxRadius;
 			$app->setUserState('hyperlocal_location', $hyperlocal);
 
 			echo new JResponseJson($hyperlocal, '');

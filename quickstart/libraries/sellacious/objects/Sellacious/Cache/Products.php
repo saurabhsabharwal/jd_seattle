@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -117,7 +117,7 @@ class Products extends Cache
 
 			$query->update($this->db->quoteName('#__sellacious_cache_products'))
 				->set('state = 0')
-				->where('manufacturer_id IN (' . implode(', ', $pks) . ')', 'OR')
+				->where('manufacturer_id IN (' . implode(', ', $pks) . ')', ('OR'))
 				->where('seller_uid IN (' . implode(', ', $pks) . ')');
 			$this->db->setQuery($query)->execute();
 
@@ -345,6 +345,7 @@ class Products extends Cache
 				'metakey'             => 'a.metakey',
 				'metadesc'            => 'a.metadesc',
 				'primary_video_url'   => 'a.primary_video_url',
+				'product_location'    => 'a.location',
 				'tags'                => 'a.tags',
 				'owner_uid'           => 'a.owned_by',
 				'psx_id'              => 'psx.id',

@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -43,7 +43,7 @@ class SellaciousHelperAccess extends SellaciousHelperBase
 	{
 		$me = JFactory::getUser();
 
-		return $me->authorise($action, $assetName);
+		return $me->authorise($action, $assetName) || $me->authorise('app.admin', 'com_sellacious');
 	}
 
 	/**

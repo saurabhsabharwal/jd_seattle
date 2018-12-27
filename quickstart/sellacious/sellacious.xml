@@ -2,12 +2,12 @@
 <extension type="application" version="3.0" method="upgrade" standalone="false">
 	<name>SELLACIOUS</name>
 	<author>Izhar Aazmi</author>
-	<creationDate>November 08, 2018</creationDate>
+	<creationDate>December 26, 2018</creationDate>
 	<copyright>Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.</copyright>
 	<license>SPL Sellacious Private License; see http://www.sellacious.com/spl.html</license>
 	<authorEmail>info@bhartiy.com</authorEmail>
 	<authorUrl>www.bhartiy.com</authorUrl>
-	<version>1.6.0</version>
+	<version>1.6.1-alpha0</version>
 	<description>APP_SELLACIOUS_XML_DESCRIPTION</description>
 	<!--
 	<install>
@@ -29,6 +29,7 @@
 	-->
 	<files>
 		<folder>cache</folder>
+		<folder>cli</folder>
 		<folder>components/com_ajax</folder>
 		<folder>components/com_login</folder>
 		<folder>components/com_menus</folder>

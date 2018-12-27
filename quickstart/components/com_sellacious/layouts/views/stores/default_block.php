@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -17,7 +17,7 @@ $item = $tplData;
 
 /** @var  SellaciousViewStores $this */
 $logo            = $this->helper->media->getImage('sellers.logo', $item->id, true);
-$url             = JRoute::_('index.php?option=com_sellacious&view=store&layout=store&id=' . $item->user_id);
+$url             = JRoute::_('index.php?option=com_sellacious&view=store&id=' . $item->user_id);
 $store           = new Registry($item);
 $rateable        = (array) $this->helper->config->get('allow_ratings_for');
 $display_ratings = $this->helper->config->get('show_store_rating', 1);
@@ -28,7 +28,7 @@ $reviewsUrl = JRoute::_('index.php?option=com_sellacious&view=reviews&seller_uid
 	<div class="store-box">
 		<div class="image-box">
 			<a href="<?php echo $url; ?>">
-				<img src="<?php echo $logo; ?>" title="<?php echo htmlspecialchars($store->get('title'), ENT_COMPAT, 'UTF-8'); ?>">
+				<img src="<?php echo $logo; ?>" alt="<?php echo htmlspecialchars($store->get('title'), ENT_COMPAT, 'UTF-8'); ?>">
 			</a>
 		</div>
 		<div class="store-info-box">

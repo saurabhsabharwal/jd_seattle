@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -33,12 +33,13 @@ class SellaciousHelperAssociation extends AssociationExtensionHelper
 	 */
 	public static function getAssociations($id = 0, $view = null)
 	{
-		$helper     = SellaciousHelper::getInstance();
-
-		$db         = JFactory::getDbo();
-		$jinput		= JFactory::getApplication()->input;
-		$view       = $view === null ? $jinput->get('view') : $view;
-		$id         = empty($id) ? $jinput->getInt('id') : $id;
+		$helper    = SellaciousHelper::getInstance();
+		$db        = JFactory::getDbo();
+		$jinput    = JFactory::getApplication()->input;
+		$view      = $view === null ? $jinput->get('view') : $view;
+		$id        = empty($id) ? $jinput->getInt('id') : $id;
+		$isEnabled = JLanguageMultilang::isEnabled();
+		$sitelangs = JLanguageHelper::getInstalledLanguages(0);
 
 		$code = $jinput->getString('p');
 		$helper->product->parseCode($code, $productId, $variantId, $sellerId);
@@ -59,6 +60,8 @@ class SellaciousHelperAssociation extends AssociationExtensionHelper
 
 				$return = array();
 
+				if (!empty($associations))
+				{
 				foreach ($associations as $tag => $item)
 				{
 					$idSegments = explode(':', $item->id);
@@ -82,18 +85,10 @@ class SellaciousHelperAssociation extends AssociationExtensionHelper
 
 							$sellerId = $seller[0]->seller_uid;
 						}
-						else
-						{
-							$sellerId = 0;
-						}
 
 						if (!empty($variants))
 						{
 							$variantId = $variants[0]->id;
-						}
-						else
-						{
-							$variantId = 0;
 						}
 
 						$code = $helper->product->getCode($pid, $variantId, $sellerId);
@@ -117,13 +112,26 @@ class SellaciousHelperAssociation extends AssociationExtensionHelper
 						$link = 'index.php?option=com_sellacious&view=products';
 					}
 
-
-					if ($item->language && $item->language !== '*' && JLanguageMultilang::isEnabled())
+					if ($item->language && $item->language !== '*' && $isEnabled)
 					{
 						$link .= '&lang=' . $item->language;
 					}
 
 					$return[$tag] = $link;
+				}
+				}
+				else
+				{
+					$product = new Product($productId, $variantId, $sellerId);
+					$productLang = $product->get('language');
+
+					if (empty($productLang) || $productLang == '*' && $isEnabled)
+					{
+						foreach ($sitelangs as $tag => $sitelang)
+						{
+							$return[$tag] = 'index.php?option=com_sellacious&view=product&p=' . $code . '&lang=' . $tag;
+						}
+					}
 				}
 
 				return $return;
@@ -139,6 +147,35 @@ class SellaciousHelperAssociation extends AssociationExtensionHelper
 			foreach ($languages as $code => $language)
 			{
 				$link = 'index.php?option=com_sellacious&view=categories&parent_id=' . $parentId;
+				$return[$code] = $link;
+			}
+
+			return $return;
+		}
+		else
+		{
+			$id     = $jinput->getInt('id', 0);
+			$layout = $jinput->getString('layout', '');
+			$return = array();
+
+			$languages = JLanguageHelper::getInstalledLanguages(0);
+
+			foreach ($languages as $code => $language)
+			{
+				$link = 'index.php?option=com_sellacious&view=' . $view;
+
+				if ($id)
+				{
+					$link .= '&id=' . $id;
+				}
+
+				if ($layout)
+				{
+					$link .= '&layout=' . $layout;
+				}
+
+				$link .= '&lang=' . $code;
+
 				$return[$code] = $link;
 			}
 

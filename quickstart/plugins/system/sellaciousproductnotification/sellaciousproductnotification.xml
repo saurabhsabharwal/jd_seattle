@@ -2,12 +2,12 @@
 <extension version="3.0" type="plugin" method="upgrade" group="system">
 	<name>PLG_SYSTEM_SELLACIOUSPRODUCTNOTIFICATION</name>
 	<author>Mohd Kareemuddin</author>
-	<creationDate>November 08, 2018</creationDate>
+	<creationDate>December 26, 2018</creationDate>
 	<copyright>(C) 2012-2018 Bhartiy Web Technologies. All rights reserved.</copyright>
 	<license>GNU/GPL V2+</license>
 	<authorEmail>info@bhartiy.com</authorEmail>
 	<authorUrl>www.bhartiy.com</authorUrl>
-	<version>1.6.0</version>
+	<version>1.6.1-alpha0</version>
 	<description>PLG_SYSTEM_SELLACIOUSPRODUCTNOTIFICATION_DESCRIPTION</description>
 	<files>
 		<folder>forms</folder>

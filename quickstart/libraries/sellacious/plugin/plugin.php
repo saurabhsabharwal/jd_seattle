@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -111,19 +111,73 @@ abstract class SellaciousPlugin extends JPlugin
 	/**
 	 * Constructor
 	 *
-	 * @param   object &$subject  The object to observe
-	 * @param   array  $config    An optional associative array of configuration settings.
-	 *                            Recognized key values include 'name', 'group', 'params', 'language'
-	 *                            (this list is not meant to be comprehensive).
-	 *
-	 * @throws  Exception
+	 * @param   object  &$subject  The object to observe
+	 * @param   array   $config    An optional associative array of configuration settings.
+	 *                             Recognized key values include 'name', 'group', 'params', 'language'
+	 *                             (this list is not meant to be comprehensive).
 	 *
 	 * @since   1.5
 	 */
-	public function __construct($subject, array $config)
+	public function __construct(&$subject, $config = array())
 	{
-		parent::__construct($subject, $config);
+		// Get the parameters.
+		if (isset($config['params']))
+		{
+			if ($config['params'] instanceof Registry)
+			{
+				$this->params = $config['params'];
+			}
+			else
+			{
+				$this->params = new Registry($config['params']);
+			}
+		}
 
+		// Get the plugin name.
+		if (isset($config['name']))
+		{
+			$this->_name = $config['name'];
+		}
+
+		// Get the plugin type.
+		if (isset($config['type']))
+		{
+			$this->_type = $config['type'];
+		}
+
+		// Load the language files if needed.
+		if ($this->autoloadLanguage)
+		{
+			$this->loadLanguage();
+		}
+
+		if (property_exists($this, 'app'))
+		{
+			$reflection = new \ReflectionClass($this);
+
+			if (\JFactory::$application && $reflection->getProperty('app')->isPrivate() === false && $this->app === null)
+			{
+				$this->app = \JFactory::getApplication();
+			}
+		}
+
+		if (property_exists($this, 'db'))
+		{
+			$reflection = new \ReflectionClass($this);
+
+			if ($reflection->getProperty('db')->isPrivate() === false && $this->db === null)
+			{
+				$this->db = \JFactory::getDbo();
+			}
+		}
+
+		// Register the observer ($this) so we can be notified
+		$subject->attach($this);
+
+		// Set the subject to observe
+		$this->_subject = &$subject;
+
+		// Setup sellacious
 		$this->helper     = SellaciousHelper::getInstance();
 		$this->pluginName = 'plg_' . $this->_type . '_' . $this->_name;
 		$this->pluginPath = JPATH_PLUGINS . '/' . $this->_type . '/' . $this->_name;

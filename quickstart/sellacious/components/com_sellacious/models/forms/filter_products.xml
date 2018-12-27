@@ -64,6 +64,15 @@
 		>
 			<option value="">COM_SELLACIOUS_OPTION_PRODUCT_LISTING_SELECT_MANUFACTURER</option>
 		</field>
+		<field
+			name="language"
+			type="ProductLanguages"
+			onchange="this.form.submit();"
+			class="small-input combobox-list-md"
+		>
+			<option value="">COM_SELLACIOUS_OPTION_PRODUCT_LISTING_SELECT_LANGUAGE</option>
+			<option value="*">COM_SELLACIOUS_OPTION_PRODUCT_LISTING_SELECT_LANGUAGE_ALL</option>
+		</field>
 	</fields>
 
 	<fields name="list">

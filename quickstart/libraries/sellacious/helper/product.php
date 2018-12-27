@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -866,7 +866,7 @@ class SellaciousHelperProduct extends SellaciousHelperBase
 		}
 
 		$query->where('psx.state = 1')
-			->where('(pp.product_price > 0 OR psx.price_display > 0)')
+			// ->where('(pp.product_price > 0 OR psx.price_display > 0)')
 
 			->select('psx.price_display, CASE psx.price_display WHEN 0 THEN pp.product_price ELSE 0 END AS product_price')
 			->select("CASE a.type WHEN 'physical' THEN psp.listing_type WHEN 'package' THEN psk.listing_type END AS listing_type")
@@ -2200,6 +2200,14 @@ class SellaciousHelperProduct extends SellaciousHelperBase
 		$query->where('(a.product_type = ' . implode(' OR a.product_type = ', $this->db->quote($allowed)) . ')');
 		$query->where('a.product_active = 1');
 		$query->where('a.listing_active = 1');
+
+		// filter by language
+		$language = JFactory::getLanguage()->getTag();
+
+		if ($language)
+		{
+			$query->where('(a.language = ' . $this->db->quote($language) . ' OR a.language = ' . $this->db->quote('*') . ' OR a.language = ' . $this->db->quote('') . ')');
+		}
 
 		if ($type == 'bestselling')
 		{

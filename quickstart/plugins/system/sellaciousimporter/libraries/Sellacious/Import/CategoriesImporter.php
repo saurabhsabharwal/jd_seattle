@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -274,6 +274,8 @@ class CategoriesImporter extends AbstractImporter
 	 * @throws  \Exception
 	 *
 	 * @since   1.5.2
+	 *
+	 * @deprecated   This should be pre-merged into preprocessCsvRow() method itself
 	 */
 	protected function translate($obj)
 	{
@@ -282,7 +284,7 @@ class CategoriesImporter extends AbstractImporter
 			'electronic' => 'product/electronic',
 			'package'    => 'product/package',
 		);
-		$booleans = array('TRUE', 'YES', '1', 'PUBLISHED', 'ACTIVE', 'ENABLED');
+		$booleans = array('TRUE', 'YES', '1', 'PUBLISHED', 'ACTIVE', 'ENABLED', 'T' , 'Y');
 
 		if (isset($obj->allow_product_compare))
 		{
@@ -364,7 +366,7 @@ class CategoriesImporter extends AbstractImporter
 		parent::preprocessCsvRow($row, $record, $offset);
 
 		// First row may contain list options for list type fields, for this the category title (first column) must be empty
-		if ($offset == 1 && trim($record->category_title) == '')
+		if ($offset === 1 && trim($record->category_title) === '')
 		{
 			foreach ($this->specifications as $i => $field)
 			{

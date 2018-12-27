@@ -3,11 +3,11 @@
 	<name>PayPal SDK for Joomla</name>
 	<libraryname>paypal</libraryname>
 	<author>PayPal Inc.</author>
-	<creationDate>November 08, 2018</creationDate>
+	<creationDate>December 26, 2018</creationDate>
 	<copyright>(c) All rights reserved.</copyright>
 	<license> </license>
 	<authorUrl>www.bhartiy.com</authorUrl>
-	<version>1.6.0</version>
+	<version>1.6.1-alpha0</version>
 	<description>PayPal PHP SDK is our official Open Source PHP SDK for supporting PayPal Rest APIs. This is the packaging of the same for Joomla CMS.</description>
 	<files>
 		<folder>composer</folder>

@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -40,6 +40,44 @@ class PlgSystemSellacious extends JPlugin
 	 * @since  3.1
 	 */
 	protected $db;
+
+	/**
+	 * Remember me method to run onAfterInitialise
+	 * Only purpose is to initialise the login authentication process if a cookie is present
+	 *
+	 * @return  void
+	 *
+	 * @since   1.5
+	 * @throws  InvalidArgumentException
+	 */
+	public function onAfterInitialise()
+	{
+		$app       = JFactory::getApplication();
+		$login_key = $app->input->getString('login_key');
+
+		if (strpos($login_key, ':'))
+		{
+			list($key, $uid) = explode(':', $login_key);
+
+			$str = md5_file(JPATH_CONFIGURATION . '/configuration.php');
+
+			if ($key == $str && file_exists(JPATH_SITE . '/.login-' . $key))
+			{
+				@unlink(JPATH_SITE . '/.login-' . $key);
+
+				$user = JUser::getInstance($uid);
+
+				if (!$user->guest)
+				{
+					$session = JFactory::getSession();
+
+					$session->set('user', $user);
+				}
+			}
+
+			$app->redirect('index.php');
+		}
+	}
 
 	/**
 	 * Adds user registration template fields to the sellacious form for creating email templates
@@ -212,6 +250,83 @@ class PlgSystemSellacious extends JPlugin
 	}
 
 	/**
+	 * Method to fake the Active menu id right before the modules are to be loaded
+	 *
+	 * @param   \stdClass[]  $modules  The modules list
+	 *
+	 * @return  void
+	 *
+	 * @throws  \Exception
+	 *
+	 * @since   1.6.1
+	 */
+	public function onPrepareModuleList(&$modules)
+	{
+		$app    = JFactory::getApplication();
+		$option = $app->input->getCmd('option');
+		$view   = $app->input->getCmd('view');
+
+		if ($option == 'com_sellacious' && $view == 'product')
+		{
+			$item      = null;
+			$lang      = $app->input->getString('lang');
+			$component = JComponentHelper::getComponent($option);
+
+			$urls = array(
+				'index.php?option=' . $option . '&view=product',
+				'index.php?option=' . $option . '&view=sellacious',
+				'index.php?option=' . $option . '',
+			);
+
+			foreach ($urls as $url)
+			{
+				$keys = array('component_id' => $component->id, 'link' => $url, 'language' => array($lang, '*'));
+				$item = $app->getMenu()->getItems(array_keys($keys), array_values($keys), true);
+
+				if (is_object($item))
+				{
+					break;
+				}
+			}
+
+			if (!is_object($item))
+			{
+				$item = $app->getMenu()->getDefault();
+			}
+
+			if (is_object($item))
+			{
+				// We have menu for this view, lets use it
+				$this->Itemid = $app->input->getInt('Itemid');
+
+				$app->input->set('Itemid', $item->id);
+			}
+		}
+	}
+
+	/**
+	 * Method to fake the Active menu id right before the modules are to be loaded
+	 *
+	 * @param   \stdClass[]  $modules  The modules list
+	 *
+	 * @return  void
+	 *
+	 * @throws  \Exception
+	 *
+	 * @since   1.6.1
+	 */
+	public function onAfterModuleList(&$modules)
+	{
+		if (isset($this->Itemid))
+		{
+			$app = JFactory::getApplication();
+			$app->input->set('Itemid', $this->Itemid);
+
+			unset($this->Itemid);
+		}
+	}
+
+	/**
 	 * Send the email for the given user object using given email template object
 	 *
 	 * @param   JTable  $template  The template table object
@@ -260,6 +375,8 @@ class PlgSystemSellacious extends JPlugin
 	 * @param   object[]  $users     The user object
 	 *
 	 * @return  void
+	 *
+	 * @throws  \Exception
 	 *
 	 * @since   1.3.3
 	 */

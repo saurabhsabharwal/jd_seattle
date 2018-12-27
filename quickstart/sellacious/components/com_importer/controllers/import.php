@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -10,9 +10,9 @@
 // No direct access.
 defined('_JEXEC') or die;
 
-use Sellacious\Import\ImportHelper;
 use Sellacious\Import\AbstractImporter;
-use Sellacious\Import\ImagesImporter;
+use Sellacious\Import\ImportHelper;
+use Sellacious\Import\ImportRecord;
 use Sellacious\Utilities\Timer;
 
 /**
@@ -45,16 +45,13 @@ class ImporterControllerImport extends SellaciousControllerAdmin
 			}
 
 			/** @var  \ImporterModelImport  $model */
-			$model = $this->getModel('Import', 'ImporterModel');
-			$model->upload($handler);
+			$model    = $this->getModel('Import', 'ImporterModel');
+			$importId = $model->upload($handler);
 
+			$this->setRedirect(JRoute::_('index.php?option=com_importer&view=import&id=' . $importId, false));
 			$this->setMessage(JText::_('COM_IMPORTER_IMPORT_FILE_UPLOAD_SUCCESS'));
 
 			return true;
-		}
-		catch (SellaciousExceptionPremium $e)
-		{
-			$this->setMessage($e->getMessage(), 'premium');
 		}
 		catch (Exception $e)
 		{
@@ -75,55 +72,59 @@ class ImporterControllerImport extends SellaciousControllerAdmin
 	{
 		$this->validateAjaxToken();
 
-		$app   = JFactory::getApplication();
-		$state = $app->getUserState('com_importer.import.state');
-
-		// Check if there is a process queued up and started
-		$active = (is_object($state) && !empty($state->logfile)) ? ($state->logfile && file_exists($state->logfile)) : null;
-
-		if ($active === null)
+		try
 		{
+			$import   = null;
+			$importId = $this->app->input->getInt('id');
+			$import   = ImportHelper::getImport($importId);
+
+			// If nothing queued up, we quit
 			$response = array(
 				'state'   => 0,
 				'message' => JText::_('COM_IMPORTER_IMPORT_FILE_NO_PENDING_TO_IMPORT'),
 				'data'    => null,
 			);
 
-			echo json_encode($response);
-
-			$app->close();
-		}
-
-		if ($active)
-		{
-			$response = array(
-				'state'   => 1,
-				'message' => JText::_('COM_IMPORTER_IMPORT_OPTIONS_SKIP_PROCESS_RUNNING'),
-				'data'    => null,
-			);
-
-			echo json_encode($response);
-
-			$app->close();
-		}
-
-		// If queued up but not started yet, we have a chance to update the options
-		try
-		{
-			if (!$this->helper->access->check('importer.import', $state->handler, 'com_importer'))
+			if ($import->state <= 0)
 			{
-				throw new Exception(JText::_('COM_IMPORTER_ACCESS_NOT_ALLOWED'));
+				// Use default response
 			}
+			elseif ($import->state === 1)
+			{
+				// If queued up but not started yet, we have a chance to update the options
+				if (!$this->helper->access->check('importer.import', $import->handler, 'com_importer'))
+				{
+					throw new Exception(JText::_('COM_IMPORTER_ACCESS_NOT_ALLOWED'));
+				}
 
-			/** @var  \ImporterModelImport  $model */
-			$model = $this->getModel('Import', 'ImporterModel');
-			$model->setOptions();
+				/** @var  \ImporterModelImport  $model */
+				$model = $this->getModel('Import', 'ImporterModel');
+				$model->setOptions();
 
-			$response = array(
-				'state'   => 1,
-				'message' => JText::_('COM_IMPORTER_IMPORT_IMPORT_OPTIONS_UPDATED'),
-				'data'    => null,
-			);
+				$response = array(
+					'state'   => 1,
+					'message' => JText::_('COM_IMPORTER_IMPORT_IMPORT_OPTIONS_UPDATED'),
+					'data'    => null,
+				);
+			}
+			elseif ($import->state === 2)
+			{
+				// If queued up and started already, we just missed the coffee
+				$response = array(
+					'state'   => 1,
+					'message' => JText::_('COM_IMPORTER_IMPORT_OPTIONS_SKIP_PROCESS_RUNNING'),
+					'data'    => null,
+				);
+			}
+			elseif ($import->state === 3)
+			{
+				// If already finished, we're too late to the party
+				$response = array(
+					'state'   => 1,
+					'message' => JText::_('COM_IMPORTER_IMPORT_FILE_NO_PENDING_TO_IMPORT'),
+					'data'    => null,
+				);
+			}
 		}
 		catch (Exception $e)
 		{
@@ -136,7 +137,7 @@ class ImporterControllerImport extends SellaciousControllerAdmin
 
 		echo json_encode($response);
 
-		$app->close();
+		$this->app->close();
 	}
 
 	/**
@@ -150,165 +151,268 @@ class ImporterControllerImport extends SellaciousControllerAdmin
 	{
 		$this->validateAjaxToken();
 
-		$app   = JFactory::getApplication();
-		$state = $app->getUserState('com_importer.import.state');
-
-		// Check if there is a process queued up and started
-		$active = (is_object($state) && !empty($state->logfile)) ? ($state->logfile && file_exists($state->logfile)) : null;
-
-		if ($active === null)
+		try
 		{
+			$import   = null;
+			$importId = $this->app->input->getInt('id');
+			$import   = ImportHelper::getImport($importId);
+
+			// If nothing queued up, we quit
 			$response = array(
 				'state'   => 0,
-				'message' => JText::_('COM_IMPORTER_IMPORT_FILE_NO_PENDING_TO_IMPORT'),
+				'message' => JText::_('COM_IMPORTER_IMPORT_FILE_NO_PENDING_TO_IMPORT_NOT_FOUND'),
 				'data'    => null,
 			);
 
-			echo json_encode($response);
-
-			$app->close();
-		}
-
-		if ($active)
-		{
-			$log = file_get_contents($state->logfile);
-
-			if (strpos($log, 'EOF') || isset($state->done))
+			if ($import->state <= 0)
 			{
-				$app->setUserState('com_importer.import.state', null);
+				// Use default response
+			}
+			elseif ($import->state === 1)
+			{
+				// If we are allowed to use exec for cli, we'd use it
+				$disabled = array_map('trim', explode(',', ini_get('disable_functions')));
+				$useExec  = is_callable('exec') && !in_array('exec', $disabled) && strtolower(ini_get('safe_mode')) != 1;
+
+				try
+				{
+					$response = $useExec ? $this->startImportCli($import) : $this->startImport($import);
+				}
+				catch (Exception $e)
+				{
+					$response = array(
+						'state'   => 0,
+						'message' => JText::sprintf('COM_IMPORTER_IMPORT_START_FAILED_ERROR', $e->getMessage()),
+						'data'    => null,
+					);
+				}
+			}
+			elseif ($import->state === 2)
+			{
+				// If queued up and started already, we will send log only
+				$log = file_get_contents($import->log_path);
+
+				// Finished job
+				if (strpos($log, 'EOF'))
+				{
+					$response = array(
+						'state'   => 3,
+						'message' => JText::sprintf('COM_IMPORTER_IMPORT_COMPLETE', $import->handler),
+						'data'    => array('log' => $log),
+					);
+				}
+				// Still running or dead (but we can't detect) without finishing
+				else
+				{
+					$response = array(
+						'state'   => 2,
+						'message' => '&hellip;',
+						'data'    => array('log' => $log),
+					);
+				}
+			}
+			elseif ($import->state === 3)
+			{
+				// If finished already, we have the leftovers only, nothing to eat
+				$log = file_get_contents($import->log_path);
 
 				$response = array(
 					'state'   => 3,
-					'message' => JText::sprintf('COM_IMPORTER_IMPORT_COMPLETE', $state->handler),
+					'message' => JText::sprintf('COM_IMPORTER_IMPORT_COMPLETE', $import->handler),
 					'data'    => array('log' => $log),
 				);
 			}
-			else
-			{
-				$response = array(
-					'state'   => 2,
-					'message' => '&hellip;',
-					'data'    => array('log' => $log),
-				);
-			}
-
-			echo json_encode($response);
-
-			$app->close();
 		}
-
-		// Start import process execution
-		$response = $this->startImport();
+		catch (Exception $e)
+		{
+			$response = array(
+				'state'   => 0,
+				'message' => $e->getMessage(),
+				'data'    => null,
+			);
+		}
 
 		echo json_encode($response);
 
-		$app->close();
+		$this->app->close();
+	}
+
+	/**
+	 * Resume processing a stopped import. Callable via Ajax only
+	 *
+	 * @return  void
+	 *
+	 * @since   1.6.1
+	 */
+	public function resumeAjax()
+	{
+		$this->validateAjaxToken();
+
+		try
+		{
+			$import   = null;
+			$importId = $this->app->input->getInt('id');
+			$import   = ImportHelper::getImport($importId);
+
+			// If nothing queued up, we quit
+
+
+			if ($import->state === 0)
+			{
+				throw new Exception(JText::_('COM_IMPORTER_IMPORT_FILE_NO_PENDING_TO_IMPORT_NOT_FOUND'));
+			}
+
+			// Requeue
+			$import->setState(1);
+
+			// If we are allowed to use exec for cli, we'd use it
+			$disabled = array_map('trim', explode(',', ini_get('disable_functions')));
+			$useExec  = is_callable('exec') && !in_array('exec', $disabled) && strtolower(ini_get('safe_mode')) != 1;
+
+			try
+			{
+				$response = $useExec ? $this->startImportCli($import) : $this->startImport($import);
+			}
+			catch (Exception $e)
+			{
+				$response = array(
+					'state'   => 0,
+					'message' => JText::sprintf('COM_IMPORTER_IMPORT_START_FAILED_ERROR', $e->getMessage()),
+					'data'    => null,
+				);
+			}
+		}
+		catch (Exception $e)
+		{
+			$response = array(
+				'state'   => 0,
+				'message' => $e->getMessage(),
+				'data'    => null,
+			);
+		}
+
+		echo json_encode($response);
+
+		$this->app->close();
 	}
 
 	/**
 	 * Cancel the active import session
 	 *
-	 * @return  bool
+	 * @return  void
 	 *
 	 * @since   1.5.2
 	 */
 	public function cancel()
 	{
-		JSession::checkToken() or die('Invalid token.');
-
-		$app   = JFactory::getApplication();
-		$state = $app->getUserState('com_importer.import.state', null);
-
-		if (isset($state))
-		{
-			// Also delete import source files to avoid unnecessary clutter. But do not remove log file.
-			if ($state->path && is_file($state->path))
-			{
-				jimport('joomla.filesystem.file');
-
-				JFile::delete($state->path);
-			}
-
-			$app->setUserState('com_importer.import.state', null);
-		}
-
-		$this->setMessage(JText::_('COM_IMPORTER_IMPORT_SESSION_ABANDON_SUCCESS'));
 		$this->setRedirect(JRoute::_('index.php?option=com_importer&view=import', false));
-
-		return true;
 	}
 
 	/**
 	 * Start the queued import process
 	 *
+	 * @param   ImportRecord  $import The import options
+	 *
+	 * @return  array  The response data
+	 *
+	 * @throws  \Exception
+	 *
+	 * @since   1.6.1
+	 */
+	public function startImportCli($import)
+	{
+		$executable = JFactory::getConfig()->get('php_executable', 'php');
+		$script     = escapeshellarg(JPATH_SELLACIOUS . '/cli/sellacious_importer.php');
+		$logfile    = escapeshellarg($import->log_path);
+		$userId     = (int) JFactory::getUser()->id;
+		$cmd        = "{$executable} {$script} --user={$userId} --job={$import->id}";
+		$CMD        = "{$cmd} > {$logfile} 2> {$logfile} & echo \$!";
+		$pid        = exec($CMD);
+
+		if (!$pid)
+		{
+			throw new Exception(JText::_('COM_IMPORTER_IMPORT_CLI_EXECUTE_ERROR'));
+		}
+
+		$import->setState(2);
+
+		$response = array(
+			'state'   => 2,
+			'message' => JText::_('COM_IMPORTER_IMPORT_STARTED'),
+			'data'    => array($pid),
+		);
+
+		return $response;
+	}
+
+	/**
+	 * Start the queued import process
+	 *
+	 * @param   ImportRecord  $import  The import options
+	 *
 	 * @return  array  The response data
 	 *
 	 * @since   1.5.2
 	 */
-	protected function startImport()
+	protected function startImport($import)
 	{
-		// Get stateful instance of Timer
-		$app   = JFactory::getApplication();
-		$state = $app->getUserState('com_importer.import.state');
-		$timer = Timer::getInstance('Import.' . $state->handler, $state->logfile);
+		$userId = (int) JFactory::getUser()->id;
 
 		try
 		{
-			$timer->log('Initializing import...');
-
-			$state->mapping = isset($state->mapping) ? (array) $state->mapping : array();
-			$state->options = isset($state->options) ? (array) $state->options : array();
+			// Force importer log file
+			Timer::getInstance('Import.' . $import->handler, $import->log_path);
 
 			/** @var  AbstractImporter  $importer */
-			$importer = ImportHelper::getImporter($state->handler);
+			$importer = ImportHelper::getImporter($import->handler);
 
-			$importer->load($state->path);
-			$importer->setColumnsAlias($state->mapping);
-			$importer->setOption('output_csv', $state->outfile);
+			$importer->timer->log('Initializing import...');
 
-			foreach ($state->options as $oKey => $oValue)
-			{
-				$importer->setOption($oKey, $oValue);
-			}
+			$importer->setup($import);
+
+			// Assign active user if set
+			$importer->setOption('session.user', $userId);
+
+			$importer->timer->log('Starting import process...');
+
+			$import->setState(2);
 
 			$importer->import();
 
-			$timer->log(JText::_('COM_IMPORTER_IMPORT_EMAILING'));
+			$import->setState(3);
 
-			$subject    = JText::sprintf('COM_IMPORTER_IMPORT_LOG', $state->handler, $state->timestamp);
-			$body       = file_get_contents($state->logfile);
-			$attachment = array($state->path);
+			$importer->timer->log(JText::_('COM_IMPORTER_IMPORT_EMAILING'));
 
-			if (is_file($state->outfile))
+			$subject    = JText::sprintf('COM_IMPORTER_IMPORT_LOG', $import->handler, $import->created);
+			$body       = file_get_contents($import->log_path);
+			$attachment = array($import->path);
+
+			if (is_file($import->output_path))
 			{
-				$attachment[] = $state->outfile;
+				$attachment[] = $import->output_path;
 			}
 
 			if ($this->sendMail($subject, $body, $attachment))
 			{
-				$timer->log(JText::_('COM_IMPORTER_IMPORT_EMAIL_SENT'));
+				$importer->timer->log(JText::_('COM_IMPORTER_IMPORT_EMAIL_SENT'));
 			}
 			else
 			{
-				$timer->log(JText::_('COM_IMPORTER_IMPORT_EMAIL_FAIL'));
+				$importer->timer->log(JText::_('COM_IMPORTER_IMPORT_EMAIL_FAIL'));
 			}
 
-			$app->setUserState('com_importer.import.state.done', true);
-			$timer->log('EOF');
+			$importer->timer->log('EOF');
 
-			$log      = file_get_contents($state->logfile);
+			$log      = file_get_contents($import->log_path);
 			$response = array(
 				'state'   => 3,
-				'message' => JText::sprintf('COM_IMPORTER_IMPORT_COMPLETE', $state->handler),
+				'message' => JText::sprintf('COM_IMPORTER_IMPORT_COMPLETE', $import->handler),
 				'data'    => array('log' => $log),
 			);
 		}
 		catch (Exception $e)
 		{
-			$timer->interrupt($e->getMessage());
-			$timer->log('EOF');
-
-			$log      = file_get_contents($state->logfile);
+			$log      = file_get_contents($import->log_path);
 			$response = array(
 				'state'   => 0,
 				'message' => JText::sprintf('COM_IMPORTER_IMPORT_INTERRUPTED', $e->getMessage()),
@@ -335,15 +439,13 @@ class ImporterControllerImport extends SellaciousControllerAdmin
 	 */
 	protected function sendMail($subject, $body, $attachment)
 	{
-		$app = JFactory::getApplication();
-		$me  = JFactory::getUser();
-
-		$to          = array($me->name => $me->email);
+		$config      = JFactory::getConfig();
+		$to          = array($config->get('fromname') => $config->get('mailfrom'));
 		$cc          = array();
-		$mailFrom    = $app->get('mailfrom');
-		$fromName    = $app->get('fromname');
-		$replyTo     = $app->get('mailfrom');
-		$replyToName = $app->get('fromname');
+		$mailFrom    = $config->get('mailfrom');
+		$fromName    = $config->get('fromname');
+		$replyTo     = $config->get('mailfrom');
+		$replyToName = $config->get('fromname');
 
 		$mailer = JFactory::getMailer();
 
@@ -388,8 +490,6 @@ class ImporterControllerImport extends SellaciousControllerAdmin
 	 */
 	protected function validateAjaxToken($method = 'post')
 	{
-		$app = JFactory::getApplication();
-
 		if (!JSession::checkToken($method))
 		{
 			$response = array(
@@ -399,7 +499,7 @@ class ImporterControllerImport extends SellaciousControllerAdmin
 			);
 			echo json_encode($response);
 
-			$app->close();
+			$this->app->close();
 		}
 	}
 }

@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <extension version="2.5" type="template">
 	<name>Sellacious</name>
-	<creationDate>November 08, 2018</creationDate>
+	<creationDate>December 26, 2018</creationDate>
 	<author>Izhar Aazmi</author>
 	<authorEmail>info@bhartiy.com</authorEmail>
 	<authorUrl>http://www.bhartiy.com</authorUrl>
 	<copyright>Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.</copyright>
 	<license>SPL Sellacious Private License; see http://www.sellacious.com/spl.html</license>
-	<version>1.6.0</version>
+	<version>1.6.1-alpha0</version>
 	<description>Sellacious Default Template for backoffice application</description>
 	<files>
 		<filename>component.php</filename>

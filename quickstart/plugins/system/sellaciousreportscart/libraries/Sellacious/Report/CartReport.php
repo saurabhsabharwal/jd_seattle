@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -21,7 +21,7 @@ defined('_JEXEC') or die;
  *
  * @package   Sellacious\Report
  *
- * @since   1.6.0
+ * @since     1.6.0
  */
 class CartReport extends ReportHandler
 {
@@ -55,11 +55,13 @@ class CartReport extends ReportHandler
 		$query = $this->getListQuery();
 
 		// Get List
-		$this->db->setQuery($query, $start, $limit);
+		$this->db->setQuery($query);
 
 		$list = $this->db->loadObjectList();
 
 		$this->processData($list);
+
+		$list = array_slice($list, $start, $limit);
 
 		return $list;
 	}
@@ -73,7 +75,7 @@ class CartReport extends ReportHandler
 	 */
 	public function getListQuery()
 	{
-		$db = $this->db;
+		$db    = $this->db;
 		$query = $db->getQuery(true);
 		$date  = \JFactory::getDate();
 
@@ -104,7 +106,7 @@ class CartReport extends ReportHandler
 			"abandoned_cart"    => '(CASE WHEN a.modified = \'0000-00-00 00:00:00\' THEN \'No\' WHEN FLOOR(HOUR(TIMEDIFF(NOW(), a.modified)) / 24) > ' . $abandoned . ' THEN ' . $db->quote(\JText::_("JYES")) . ' ELSE ' . $db->quote(\JText::_("JNO")) . ' END) AS abandoned_cart',
 		);
 
-		$selectedColumns = array_values($this->processColumns($columns, $queryColumns));
+		$selectedColumns   = array_values($this->processColumns($columns, $queryColumns));
 		$selectedColumns[] = 'a.id';
 		$selectedColumns[] = 'a.cart_token';
 		$selectedColumns[] = 'a.params as cart_info_params';
@@ -136,13 +138,18 @@ class CartReport extends ReportHandler
 			$query->where('NOW() < DATE_ADD(a.modified, INTERVAL ' . $modified . ' DAY)');
 		}
 
+		if (isset($reportFilters['abandoned_only']) && !empty($reportFilters['abandoned_only']))
+		{
+			$query->having('abandoned_cart = ' . $db->quote(\JText::_("JYES")));
+		}
+
 		//Applying user filters
 		if (isset($userFilters['search']) && !empty($userFilters['search']))
 		{
 			$query->where('c.email LIKE ' . $db->quote('%' . $userFilters['search'] . '%'));
 		}
 
-		if(isset($userFilters['billing']) && !empty($userFilters['billing']))
+		if (isset($userFilters['billing']) && !empty($userFilters['billing']))
 		{
 			if ($userFilters['billing'] == 'Yes')
 			{
@@ -155,7 +162,7 @@ class CartReport extends ReportHandler
 		}
 
 
-		if(isset($userFilters['shipping']) && !empty($userFilters['shipping']))
+		if (isset($userFilters['shipping']) && !empty($userFilters['shipping']))
 		{
 			if ($userFilters['shipping'] == 'Yes')
 			{
@@ -194,11 +201,11 @@ class CartReport extends ReportHandler
 	 */
 	public function getOrdersQuery()
 	{
-		$db = $this->db;
+		$db   = $this->db;
 		$date = \JFactory::getDate();
 
 		/* Create query instance by calling parents getListQuery */
-		$query     = $db->getQuery(true);
+		$query = $db->getQuery(true);
 
 		//Report Filters
 		$reportFilters = $this->getFilter();
@@ -212,17 +219,17 @@ class CartReport extends ReportHandler
 		$abandoned = isset($reportFilters['days_after_cart_abandoned']) ? $reportFilters['days_after_cart_abandoned'] : 30;
 
 		$queryColumns = array(
-			"user_email" => 'a.customer_email as user_email',
-			"user_id" => '(CASE WHEN a.customer_uid > 0 THEN a.customer_uid ELSE ' . $db->quote(\JText::_("PLG_SYSTEM_SELLACIOUSREPORTSCART_GUEST_USER")) . ' END) as user_id',
-			"total_products" => 'COUNT(DISTINCT c.id) as total_products',
-			"billing" => '(CASE WHEN a.bt_name != "" THEN ' . $db->quote(\JText::_("JYES")) . ' ELSE ' . $db->quote(\JText::_("JNO")) . ' END) as billing',
-			"shipping" => '(CASE WHEN a.st_name != "" THEN ' . $db->quote(\JText::_("JYES")) . ' ELSE ' . $db->quote(\JText::_("JNO")) . ' END) as shipping',
+			"user_email"        => 'a.customer_email as user_email',
+			"user_id"           => '(CASE WHEN a.customer_uid > 0 THEN a.customer_uid ELSE ' . $db->quote(\JText::_("PLG_SYSTEM_SELLACIOUSREPORTSCART_GUEST_USER")) . ' END) as user_id',
+			"total_products"    => 'COUNT(DISTINCT c.id) as total_products',
+			"billing"           => '(CASE WHEN a.bt_name != "" THEN ' . $db->quote(\JText::_("JYES")) . ' ELSE ' . $db->quote(\JText::_("JNO")) . ' END) as billing',
+			"shipping"          => '(CASE WHEN a.st_name != "" THEN ' . $db->quote(\JText::_("JYES")) . ' ELSE ' . $db->quote(\JText::_("JNO")) . ' END) as shipping',
 			"checkout_answered" => '(CASE WHEN a.checkout_forms != "null" THEN ' . $db->quote(\JText::_("JYES")) . ' ELSE ' . $db->quote(\JText::_("JNO")) . ' END) as checkout_answered',
 			"shipment_selected" => '(CASE WHEN a.shipping_rule_id > 0 THEN ' . $db->quote(\JText::_("JYES")) . ' ELSE (CASE WHEN c.shipping_rule_id > 0 THEN ' . $db->quote(\JText::_("JYES")) . ' ELSE ' . $db->quote(\JText::_("JNO")) . ' END) END) as shipment_selected',
-			"payment_status" => 'd.type as payment_status',
-			"cart_total" => 'a.cart_total',
-			"last_modified" => 'a.modified as last_modified',
-			"time_since" => 'null as time_since',
+			"payment_status"    => 'd.type as payment_status',
+			"cart_total"        => 'a.cart_total',
+			"last_modified"     => 'a.modified as last_modified',
+			"time_since"        => 'null as time_since',
 			"abandoned_cart"    => '(CASE WHEN a.modified = \'0000-00-00 00:00:00\' THEN \'No\' WHEN FLOOR(HOUR(TIMEDIFF(NOW(), a.modified)) / 24) > ' . $abandoned . ' THEN ' . $db->quote(\JText::_("JYES")) . ' ELSE ' . $db->quote(\JText::_("JNO")) . ' END) AS abandoned_cart',
 		);
 
@@ -261,16 +268,21 @@ class CartReport extends ReportHandler
 		if (isset($reportFilters['last_modified_in_days']) && !empty($reportFilters['last_modified_in_days']))
 		{
 			$modified = (int) $reportFilters['last_modified_in_days'];
-			$query->where('NOW() < DATE_ADD(a.modified, INTERVAL ' . $modified .' DAY)');
+			$query->where('NOW() < DATE_ADD(a.modified, INTERVAL ' . $modified . ' DAY)');
+		}
+
+		if (isset($reportFilters['abandoned_only']) && !empty($reportFilters['abandoned_only']))
+		{
+			$query->having('abandoned_cart = ' . $db->quote(\JText::_("JYES")));
 		}
 
 		//Applying user filters
-		if(isset($userFilters['search']) && !empty($userFilters['search']))
+		if (isset($userFilters['search']) && !empty($userFilters['search']))
 		{
 			$query->where('a.customer_email LIKE ' . $db->quote('%' . $userFilters['search'] . '%'));
 		}
 
-		if(isset($userFilters['billing']) && !empty($userFilters['billing']))
+		if (isset($userFilters['billing']) && !empty($userFilters['billing']))
 		{
 			if ($userFilters['billing'] == 'Yes')
 			{
@@ -282,7 +294,7 @@ class CartReport extends ReportHandler
 			}
 		}
 
-		if(isset($userFilters['shipping']) && !empty($userFilters['shipping']))
+		if (isset($userFilters['shipping']) && !empty($userFilters['shipping']))
 		{
 			if ($userFilters['shipping'] == 'Yes')
 			{
@@ -310,7 +322,7 @@ class CartReport extends ReportHandler
 	 */
 	public function getSummaryQuery()
 	{
-		$db = $this->db;
+		$db    = $this->db;
 		$query = $db->getQuery(true);
 		$date  = \JFactory::getDate();
 
@@ -344,6 +356,11 @@ class CartReport extends ReportHandler
 			$query->where('NOW() < DATE_ADD(a.modified, INTERVAL ' . $modified . ' DAY)');
 		}
 
+		if (isset($reportFilters['abandoned_only']) && !empty($reportFilters['abandoned_only']))
+		{
+			$query->having('abandoned_cart = ' . $db->quote(\JText::_("JYES")));
+		}
+
 		$query->select('(CASE WHEN a.modified = \'0000-00-00 00:00:00\' THEN \'No\' WHEN FLOOR(HOUR(TIMEDIFF(NOW(), a.modified)) / 24) > ' . $abandoned . ' THEN ' . $db->quote(\JText::_("JYES")) . ' ELSE ' . $db->quote(\JText::_("JNO")) . ' END) AS abandoned_cart');
 
 		$query->group('a.cart_token');
@@ -361,9 +378,9 @@ class CartReport extends ReportHandler
 	public function getSummaryOrdersQuery()
 	{
 		// Orders query
-		$db = $this->db;
+		$db          = $this->db;
 		$ordersQuery = $db->getQuery(true);
-		$date  = \JFactory::getDate();
+		$date        = \JFactory::getDate();
 
 		//Report Filters
 		$reportFilters = $this->getFilter();
@@ -397,7 +414,12 @@ class CartReport extends ReportHandler
 		if (isset($reportFilters['last_modified_in_days']) && !empty($reportFilters['last_modified_in_days']))
 		{
 			$modified = (int) $reportFilters['last_modified_in_days'];
-			$ordersQuery->where('NOW() < DATE_ADD(a.modified, INTERVAL ' . $modified .' DAY)');
+			$ordersQuery->where('NOW() < DATE_ADD(a.modified, INTERVAL ' . $modified . ' DAY)');
+		}
+
+		if (isset($reportFilters['abandoned_only']) && !empty($reportFilters['abandoned_only']))
+		{
+			$ordersQuery->having('abandoned_cart = ' . $db->quote(\JText::_("JYES")));
 		}
 
 		$ordersQuery->select('(CASE WHEN a.modified = \'0000-00-00 00:00:00\' THEN \'No\' WHEN FLOOR(HOUR(TIMEDIFF(NOW(), a.modified)) / 24) > ' . $abandoned . ' THEN ' . $db->quote(\JText::_("JYES")) . ' ELSE ' . $db->quote(\JText::_("JNO")) . ' END) AS abandoned_cart');
@@ -410,7 +432,7 @@ class CartReport extends ReportHandler
 	/**
 	 * Set report summary
 	 *
-	 * @param   array  $summary
+	 * @param   array $summary
 	 *
 	 * @return  void
 	 *
@@ -418,11 +440,11 @@ class CartReport extends ReportHandler
 	 */
 	public function setSummary($summary = array())
 	{
-		$db = $this->db;
+		$db      = $this->db;
 		$summary = array();
 
 		// Create query
-		$query = $this->getSummaryQuery();
+		$query       = $this->getSummaryQuery();
 		$ordersQuery = $this->getSummaryOrdersQuery();
 
 		// Get Total Orders
@@ -451,11 +473,11 @@ class CartReport extends ReportHandler
 			return isset($item->abandoned_cart) ? ($item->abandoned_cart == \JText::_('JYES') ? true : false) : false;
 		});
 
-		$summary['total_cart'] = count($summaryItems);
-		$summary['total_cart_value'] = number_format($totalCartValue,2);
-		$summary['average_cart_value'] = $summary['total_cart'] ? number_format(($totalCartValue / $summary['total_cart']),2) : 0;
-		$summary['conversion_rate'] = $summary['total_cart'] ? round(($totalOrders / $summary['total_cart']) * 100, 2) : 0;
-		$summary['abandoned_cart'] = count($abandoned);
+		$summary['total_cart']         = count($summaryItems);
+		$summary['total_cart_value']   = number_format($totalCartValue, 2);
+		$summary['average_cart_value'] = $summary['total_cart'] ? number_format(($totalCartValue / $summary['total_cart']), 2) : 0;
+		$summary['conversion_rate']    = $summary['total_cart'] ? round(($totalOrders / $summary['total_cart']) * 100, 2) : 0;
+		$summary['abandoned_cart']     = count($abandoned);
 
 		parent::setSummary($summary);
 	}
@@ -463,7 +485,7 @@ class CartReport extends ReportHandler
 	/**
 	 * Method to process report summary.
 	 *
-	 * @param   array  $items Report data
+	 * @param   array $items Report data
 	 *
 	 * @return  null
 	 *
@@ -474,7 +496,16 @@ class CartReport extends ReportHandler
 		$db = $this->db;
 
 		//Report Filters
-		$reportFilters = $this->getFilter();
+		$reportFilters     = $this->getFilter();
+		$productCategories = isset($reportFilters['product_categories']) ? $reportFilters['product_categories'] : array();
+		$categoryChildren  = array();
+
+		foreach ($productCategories as $productCategory)
+		{
+			$categoryChildren = array_merge($categoryChildren, $this->helper->category->getChildren($productCategory, false));
+		}
+
+		$productCategories = array_merge($productCategories, $categoryChildren);
 
 		if (!empty($items))
 		{
@@ -505,8 +536,8 @@ class CartReport extends ReportHandler
 
 				if (isset($item->product_ids))
 				{
-					$productUids =  explode(',', $item->product_ids);
-					$productIds = array();
+					$productUids = explode(',', $item->product_ids);
+					$productIds  = array();
 
 					foreach ($productUids as $productUid)
 					{
@@ -515,9 +546,8 @@ class CartReport extends ReportHandler
 						$productIds[] = $productId;
 					}
 
-					if (isset($reportFilters['product_categories']) && !empty($reportFilters['product_categories']))
+					if (!empty($productCategories))
 					{
-						$productCategories = $reportFilters['product_categories'];
 						$query = $db->getQuery(true);
 						$query->select('a.product_id');
 						$query->from('#__sellacious_product_categories a');
@@ -578,8 +608,8 @@ class CartReport extends ReportHandler
 	/**
 	 * Method to get report data.
 	 *
-	 * @param   \stdClass[]     $selectedColumns    Selected Report Columns
-	 * @param   array           $queryColumns       Columns for Query
+	 * @param   \stdClass[] $selectedColumns Selected Report Columns
+	 * @param   array       $queryColumns    Columns for Query
 	 *
 	 * @return  mixed   Report data.
 	 *
@@ -605,7 +635,7 @@ class CartReport extends ReportHandler
 	/**
 	 * Method to process report data.
 	 *
-	 * @param   array  $items Report data
+	 * @param   array $items Report data
 	 *
 	 * @return  null
 	 *
@@ -616,7 +646,16 @@ class CartReport extends ReportHandler
 		$db = $this->db;
 
 		//Report Filters
-		$reportFilters = $this->getFilter();
+		$reportFilters     = $this->getFilter();
+		$productCategories = isset($reportFilters['product_categories']) ? $reportFilters['product_categories'] : array();
+		$categoryChildren  = array();
+
+		foreach ($productCategories as $productCategory)
+		{
+			$categoryChildren = array_merge($categoryChildren, $this->helper->category->getChildren($productCategory, false));
+		}
+
+		$productCategories = array_merge($productCategories, $categoryChildren);
 
 		if (!empty($items))
 		{
@@ -624,17 +663,17 @@ class CartReport extends ReportHandler
 			{
 				if (property_exists($item, 'user_email'))
 				{
-					$items[$key]->user_email = $item->user_email ? : \JText::_("PLG_SYSTEM_SELLACIOUSREPORTSCART_NO_USER_EMAIL");
+					$items[$key]->user_email = $item->user_email ?: \JText::_("PLG_SYSTEM_SELLACIOUSREPORTSCART_NO_USER_EMAIL");
 				}
 
 				if (property_exists($item, 'checkout_answered'))
 				{
-					$items[$key]->checkout_answered = $item->checkout_answered != NULL ? $item->checkout_answered : \JText::_("JNO");
+					$items[$key]->checkout_answered = $item->checkout_answered != null ? $item->checkout_answered : \JText::_("JNO");
 				}
 
 				if (property_exists($item, 'shipment_selected'))
 				{
-					$items[$key]->shipment_selected = $item->shipment_selected != NULL ? $item->shipment_selected : \JText::_("JNO");
+					$items[$key]->shipment_selected = $item->shipment_selected != null ? $item->shipment_selected : \JText::_("JNO");
 				}
 
 				if (property_exists($item, 'payment_status'))
@@ -644,7 +683,7 @@ class CartReport extends ReportHandler
 
 				if (!empty($item->cart_info_params))
 				{
-					$cartInfoParams = new Registry($item->cart_info_params);
+					$cartInfoParams   = new Registry($item->cart_info_params);
 					$checkoutFormData = $cartInfoParams->get('checkoutformdata', array());
 
 					if (!empty($checkoutFormData))
@@ -659,7 +698,7 @@ class CartReport extends ReportHandler
 					// User email
 					if (empty($item->user_email))
 					{
-						$guestCheckout = $cartInfoParams->get("guest_checkout", false);
+						$guestCheckout      = $cartInfoParams->get("guest_checkout", false);
 						$guestCheckoutEmail = $cartInfoParams->get("guest_checkout_email", "");
 
 						if ($guestCheckout && !empty($guestCheckoutEmail))
@@ -675,7 +714,7 @@ class CartReport extends ReportHandler
 
 				if (!empty($item->cart_token) && property_exists($item, 'shipment_selected'))
 				{
-					if ($item->shipment_selected != NULL)
+					if ($item->shipment_selected != null)
 					{
 
 						// get cart products
@@ -714,9 +753,9 @@ class CartReport extends ReportHandler
 
 					if (empty($grandTotal))
 					{
-						$cart                      = $this->helper->cart->getCart($item->cart_user_id, array('token' => $item->cart_token));
-						$totals                    = $cart->getTotals();
-						$grandTotal                = (float) $totals->get("grand_total");
+						$cart       = $this->helper->cart->getCart($item->cart_user_id, array('token' => $item->cart_token));
+						$totals     = $cart->getTotals();
+						$grandTotal = (float) $totals->get("grand_total");
 					}
 
 					if (isset($reportFilters['cart_value']) && !empty($reportFilters['cart_value']) && $grandTotal < (float) $reportFilters['cart_value'])
@@ -771,8 +810,8 @@ class CartReport extends ReportHandler
 
 				if (isset($item->product_ids))
 				{
-					$productUids =  explode(',', $item->product_ids);
-					$productIds = array();
+					$productUids = explode(',', $item->product_ids);
+					$productIds  = array();
 
 					foreach ($productUids as $productUid)
 					{
@@ -781,14 +820,13 @@ class CartReport extends ReportHandler
 						$productIds[] = $productId;
 					}
 
-					if (isset($reportFilters['product_categories']) && !empty($reportFilters['product_categories']))
+					if (!empty($productCategories))
 					{
-						$productCategories = $reportFilters['product_categories'];
 						$query = $db->getQuery(true);
 						$query->select('a.product_id');
 						$query->from('#__sellacious_product_categories a');
 						$query->join('INNER', '#__sellacious_products b ON b.id = a.product_id');
-						$query->where('a.product_id IN (' . (implode(',', $productIds)) . ')');
+						$query->where('a.product_id IN (' . (implode(',', array_unique($productIds))) . ')');
 						$query->where('a.category_id IN (' . (implode(',', $productCategories)) . ')');
 
 						$db->setQuery($query);
@@ -817,7 +855,7 @@ class CartReport extends ReportHandler
 						$query->select('a.id');
 						$query->from('#__sellacious_products a');
 						$query->where('a.type IN (' . implode(',', $db->quote($productTypes)) . ')');
-						$query->where('a.id IN (' . (implode(',', $productIds)) . ')');
+						$query->where('a.id IN (' . (implode(',', array_unique($productIds))) . ')');
 
 						$db->setQuery($query);
 

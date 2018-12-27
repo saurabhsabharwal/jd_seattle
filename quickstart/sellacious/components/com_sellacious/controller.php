@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -8,10 +8,30 @@
  * @author      Izhar Aazmi <info@bhartiy.com> - http://www.bhartiy.com
  */
 // No direct access
+use Sellacious\Cache\CacheHelper;
+
 defined('_JEXEC') or die;
 
 class SellaciousController extends SellaciousControllerBase
 {
+	/**
+	 * Constructor.
+	 *
+	 * @param   array $config An optional associative array of configuration settings.
+	 *
+	 * @throws  Exception
+	 *
+	 * @see     JControllerLegacy
+	 *
+	 * @since   1.0.0
+	 */
+	public function __construct(array $config = array())
+	{
+		parent::__construct($config);
+
+		$this->registerTask('refreshTableAndMedia', 'systemAutofix');
+	}
+
 	/**
 	 * Method to display a view.
 	 *
@@ -307,7 +327,7 @@ class SellaciousController extends SellaciousControllerBase
 	protected function canList($asset)
 	{
 		$b = $this->helper->access->check($asset . '.list') ||
-			$this->helper->access->check($asset . '.list.own');
+			 $this->helper->access->check($asset . '.list.own');
 
 		return $b;
 	}
@@ -333,9 +353,9 @@ class SellaciousController extends SellaciousControllerBase
 	 *
 	 * @return  bool
 	 *
-	 * @since   1.6.0
+	 * @since   1.6.1
 	 */
-	public function refreshTableAndMedia()
+	public function systemAutofix()
 	{
 		$this->checkToken();
 
@@ -411,8 +431,87 @@ class SellaciousController extends SellaciousControllerBase
 			$this->app->enqueueMessage($e->getMessage(), 'error');
 		}
 
+		// Fix products alias
+		$filters  = array('list.select' => 'a.id');
+		$iterator = $this->helper->product->getIterator($filters);
+
+		foreach ($iterator as $obj)
+		{
+			$table = SellaciousTable::getInstance('Product');
+
+			try
+			{
+				$table->load($obj->id);
+
+				$value = $table->alias;
+
+				$table->check();
+
+				if ($value != $table->alias)
+				{
+					$table->store();
+				}
+			}
+			catch (Exception $e)
+			{
+				// Ignore
+			}
+		}
+
+		// Fix variants alias
+		$filters  = array('list.select' => 'a.id');
+		$iterator = $this->helper->variant->getIterator($filters);
+
+		foreach ($iterator as $obj)
+		{
+			$table = SellaciousTable::getInstance('Variant');
+
+			try
+			{
+				$table->load($obj->id);
+
+				$value = $table->alias;
+
+				$table->check();
+
+				if ($value != $table->alias)
+				{
+					$table->store();
+				}
+			}
+			catch (Exception $e)
+			{
+				// Ignore
+			}
+		}
+
 		$this->setMessage(JText::_('COM_SELLACIOUS_REFRESH_SUCCESS'));
 
 		return true;
+	}
+
+	/**
+	 * Check whether a cache process is running in the background
+	 *
+	 * @return  void
+	 *
+	 * @since   1.6.1
+	 */
+	public function checkCacheAjax()
+	{
+		$state = CacheHelper::isRunning();
+
+		if ($state)
+		{
+			$data = array('state' => 2, 'message' => 'Cache is running', 'data'  => null);
+		}
+		else
+		{
+			$data = array('state' => 1, 'message' => 'Cache is not running', 'data'  => null);
+		}
+
+		echo json_encode($data);
+
+		jexit();
 	}
 }

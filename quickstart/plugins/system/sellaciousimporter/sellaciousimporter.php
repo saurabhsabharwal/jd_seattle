@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious.plugin
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -11,12 +11,17 @@
 defined('_JEXEC') or die;
 
 use Joomla\Archive\Archive;
+use Joomla\Registry\Registry;
 use Joomla\Utilities\ArrayHelper;
+use Sellacious\Cache\Prices;
+use Sellacious\Cache\Products;
+use Sellacious\Cache\Specifications;
 use Sellacious\Export\OrdersExporter;
 use Sellacious\Export\ProductsExporter;
 use Sellacious\Import\AbstractImporter;
 use Sellacious\Import\ImportHandler;
 use Sellacious\Import\ImportHelper;
+use Sellacious\Import\ImportRecord;
 use Sellacious\Utilities\Timer;
 
 jimport('sellacious.loader');
@@ -181,60 +186,91 @@ class PlgSystemSellaciousImporter extends SellaciousPluginImporter
 	 */
 	public function onImportSetOptions($context)
 	{
-		$handlers = array();
-		$handler  = $this->getState('handler');
-		$this->onCollectHandlers($context, $handlers);
-
-		if ($context != 'com_importer.import' || !array_key_exists($handler, $handlers))
+		if ($context !== 'com_importer.import')
 		{
 			return true;
 		}
 
-		$templateId = $this->app->input->getInt('template_id');
-		$template   = ImportHelper::getTemplate($templateId);
+		$import = $this->getActiveImport();
 
-		if ($handler === 'products')
+		if (!$import)
+		{
+			return true;
+		}
+
+		$handlers = array();
+		$this->onCollectHandlers($context, $handlers);
+
+		if (!array_key_exists($import->handler, $handlers))
+		{
+			return true;
+		}
+
+		// Request may override selected template id
+		$import->template = $this->app->input->getInt('template_id', $import->template);
+		$template         = ImportHelper::getTemplate($import->template);
+
+		if ($import->handler === 'products')
 		{
 			// Alias override can always be allowed as we already have limited the columns using the template mapping
-			$options = $template && !$template->override ? $template->params : $this->app->input->get('params', array(), 'array');
-			$aliases = $this->app->input->get('alias', array(), 'array');
+			$options = array();
+			$mapping = $this->app->input->get('alias', array(), 'array');
+
+			if (!$template || $template->override)
+			{
+				$options = $this->app->input->get('params', array(), 'array');
+			}
 
 			/** @var  AbstractImporter  $importer */
-			$path     = $this->getState('path');
-			$importer = ImportHelper::getImporter($handler);
-			$importer->load($path);
-			$importer->setColumnsAlias($aliases);
+			$importer = ImportHelper::getImporter($import->handler);
+			$importer->load($import->path);
+			$importer->setColumnsAlias($mapping);
 
-			$this->app->setUserState('com_importer.import.state.options', $options);
-			$this->app->setUserState('com_importer.import.state.mapping', $aliases);
+			// There was no validation errors in the import handler, lets update options
+			$import->mapping = json_encode($mapping);
+			$import->options = json_encode($options);
+
+			$import->save();
 		}
-		elseif ($handler === 'categories')
+		elseif ($import->handler === 'categories')
 		{
 			// Alias override can always be allowed as we already have limited the columns using the template mapping
-			$options = $template && !$template->override ? $template->params : $this->app->input->get('params', array(), 'array');
-			$aliases = $this->app->input->get('alias', array(), 'array');
+			$options = array();
+			$mapping = $this->app->input->get('alias', array(), 'array');
 			$fields  = $this->app->input->get('fields', array(), 'array');
 
-			/** @var  AbstractImporter  $importer */
-			$path     = $this->getState('path');
-			$importer = ImportHelper::getImporter($handler);
-			$importer->load($path);
-			$importer->setColumnsAlias($aliases);
+			if (!$template || $template->override)
+			{
+				$options = $this->app->input->get('params', array(), 'array');
+			}
 
-			$this->app->setUserState('com_importer.import.state.options', $options);
-			$this->app->setUserState('com_importer.import.state.mapping', $aliases);
-			$this->app->setUserState('com_importer.import.state.options.fields', $fields);
+			/** @var  AbstractImporter  $importer */
+			$importer = ImportHelper::getImporter($import->handler);
+			$importer->load($import->path);
+			$importer->setColumnsAlias($mapping);
+
+			// There was no validation errors in the import handler, lets update options
+			$options = new Registry($options);
+			$options->set('fields', $fields);
+
+			$import->mapping = json_encode($mapping);
+			$import->options = json_encode($options);
+
+			$import->save();
 		}
-		elseif ($handler === 'images')
+		elseif ($import->handler === 'images')
 		{
+			// Templates not applicable for images importer
 			$options = $this->app->input->get('params', array(), 'array');
 
 			/** @var  AbstractImporter  $importer */
-			$path     = $this->getState('path');
-			$importer = ImportHelper::getImporter($handler);
-			$importer->load($path);
+			$importer = ImportHelper::getImporter($import->handler);
+			$importer->load($import->path);
 
-			$this->app->setUserState('com_importer.import.state.options', $options);
+			// There was no validation errors in the import handler, lets update options
+			$import->options = json_encode($options);
+
+			$import->save();
 		}
 
 		return true;
@@ -325,21 +361,27 @@ class PlgSystemSellaciousImporter extends SellaciousPluginImporter
 	 */
 	protected function setupCsvImport($handler)
 	{
-		$path  = $this->uploadFile('import_file', array('.csv'));
-		$now   = JFactory::getDate()->format('Y-m-d H:i:s T');
-		$tplId = $this->app->input->getInt('template_id', 0);
-		$state = (object) array(
-			'handler'   => $handler,
-			'path'      => $path,
-			'logfile'   => $path . '-log.log',
-			'outfile'   => $path . '-output.csv',
-			'template'  => $tplId,
-			'mapping'   => array(),
-			'options'   => array(),
-			'timestamp' => $now,
-		);
+		$path     = $this->uploadFile('import_file', array('.csv'));
+		$tplId    = $this->app->input->getInt('template_id', 0);
+		$template = ImportHelper::getTemplate($tplId);
 
-		$this->app->setUserState('com_importer.import.state', $state);
+		$import = new ImportRecord;
+
+		$import->id          = null;
+		$import->handler     = $handler;
+		$import->path        = $path;
+		$import->log_path    = substr($path, 0, - 4) . '.log';
+		$import->output_path = substr($path, 0, - 4) . '-output.csv';
+		$import->template    = $tplId;
+		$import->mapping     = $template->mapping;
+		$import->options     = $template->params;
+		$import->progress    = null;
+		$import->params      = null;
+		$import->state       = 1;
+
+		$import->save();
+
+		$this->app->setUserState('com_importer.import.state.id', $import->id);
 	}
 
 	/**
@@ -378,17 +420,23 @@ class PlgSystemSellaciousImporter extends SellaciousPluginImporter
 			throw new Exception(JText::_('PLG_SYSTEM_SELLACIOUSIMPORTER_IMPORT_IMAGES_SOURCE_NOT_FOUND'));
 		}
 
-		$now   = JFactory::getDate()->format('Y-m-d H:i:s T', true);
-		$state = (object) array(
-			'handler'   => $handler,
-			'path'      => $this->tmpPath. '/' . $src,
-			'logfile'   => $this->tmpPath. '/' . $src . '-log.log',
-			'outfile'   => $this->tmpPath. '/' . $src . '-output.csv',
-			'options'   => array(),
-			'timestamp' => $now,
-		);
+		$import = new ImportRecord;
 
-		$this->app->setUserState('com_importer.import.state', $state);
+		$import->id          = null;
+		$import->handler     = $handler;
+		$import->path        = $this->tmpPath . '/' . $src;
+		$import->log_path    = $this->tmpPath . '/' . $src . '-logs.log';
+		$import->output_path = $this->tmpPath . '/' . $src . '-output.csv';
+		$import->template    = 0;
+		$import->mapping     = null;
+		$import->options     = null;
+		$import->progress    = null;
+		$import->params      = null;
+		$import->state       = 1;
+
+		$import->save();
+
+		$this->app->setUserState('com_importer.import.state.id', $import->id);
 	}
 
 	/**
@@ -526,8 +574,8 @@ class PlgSystemSellaciousImporter extends SellaciousPluginImporter
 						$state = (object) array(
 							'handler'   => $template->import_type,
 							'path'      => $folder . '/' . $file,
-							'logfile'   => $folder . '/' . $base . '-log.log',
-							'outfile'   => $folder . '/' . $base . '-output.csv',
+							'log_path'    => $folder . '/' . $base . '-log.log',
+							'output_path' => $folder . '/' . $base . '-output.csv',
 							'template'  => $template->id,
 							'mapping'   => $template->mapping ?: array(),
 							'options'   => $template->params ?: array(),
@@ -535,7 +583,7 @@ class PlgSystemSellaciousImporter extends SellaciousPluginImporter
 							'done'      => false,
 						);
 
-						$timer = Timer::getInstance('Import.' . $state->handler, $state->logfile);
+						$timer = Timer::getInstance('Import.' . $state->handler, $state->log_path);
 
 						try
 						{
@@ -548,7 +596,7 @@ class PlgSystemSellaciousImporter extends SellaciousPluginImporter
 
 						try
 						{
-							$pCache = new Sellacious\Cache\Products;
+							$pCache = new Products;
 							$pCache->build();
 							$timer->log(JText::_('Rebuild products cache completed.'));
 						}
@@ -559,7 +607,7 @@ class PlgSystemSellaciousImporter extends SellaciousPluginImporter
 
 						try
 						{
-							$rCache = new Sellacious\Cache\Prices;
+							$rCache = new Prices;
 							$rCache->build();
 							$timer->log(JText::_('Rebuild prices cache completed.'));
 						}
@@ -570,7 +618,7 @@ class PlgSystemSellaciousImporter extends SellaciousPluginImporter
 
 						try
 						{
-							$sCache = new Sellacious\Cache\Specifications;
+							$sCache = new Specifications;
 							$sCache->build();
 							$timer->log(JText::_('Rebuild specifications cache completed.'));
 						}
@@ -581,13 +629,13 @@ class PlgSystemSellaciousImporter extends SellaciousPluginImporter
 
 						$timer->log(JText::_('PLG_SYSTEM_SELLACIOUSIMPORTER_IMPORT_EMAILING'));
 
-						$subject    = JText::sprintf('PLG_SYSTEM_SELLACIOUSIMPORTER_IMPORT_LOG_AUTO', $state->handler, $state->timestamp);
-						$body       = file_get_contents($state->logfile);
+						$subject    = JText::sprintf('PLG_SYSTEM_SELLACIOUSIMPORTER_IMPORT_LOG_AUTO', $state->handler, $state->created);
+						$body       = file_get_contents($state->log_path);
 						$attachment = array($state->path);
 
-						if (is_file($state->outfile))
+						if (is_file($state->output_path))
 						{
-							$attachment[] = $state->outfile;
+							$attachment[] = $state->output_path;
 						}
 
 						try
@@ -616,8 +664,8 @@ class PlgSystemSellaciousImporter extends SellaciousPluginImporter
 						JFolder::create($moveTo);
 
 						JFile::move($state->path, $moveTo . basename($state->path));
-						JFile::move($state->logfile, $moveTo . basename($state->logfile));
-						JFile::move($state->outfile, $moveTo . basename($state->outfile));
+						JFile::move($state->log_path, $moveTo . basename($state->log_path));
+						JFile::move($state->output_path, $moveTo . basename($state->output_path));
 						JFile::write($moveTo . 'index.html', '<html></html>');
 
 						// We only execute one file per job cycle to avoid any possible conflicts or collisions.
@@ -650,7 +698,7 @@ class PlgSystemSellaciousImporter extends SellaciousPluginImporter
 	protected function importCsv($state)
 	{
 		// Get stateful instance of Timer
-		$timer = Timer::getInstance('Import.' . $state->handler, $state->logfile);
+		$timer = Timer::getInstance('Import.' . $state->handler, $state->log_path);
 
 		if (!is_file($state->path))
 		{
@@ -667,7 +715,7 @@ class PlgSystemSellaciousImporter extends SellaciousPluginImporter
 
 			$importer->load($state->path);
 			$importer->setColumnsAlias($state->mapping);
-			$importer->setOption('output_csv', $state->outfile);
+			$importer->setOption('import.output_path', $state->output_path);
 
 			foreach ($state->options as $oKey => $oValue)
 			{

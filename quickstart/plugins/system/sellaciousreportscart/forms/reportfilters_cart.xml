@@ -53,7 +53,7 @@
 				description="PLG_SYSTEM_SELLACIOUSREPORTSCART_PRODUCT_FIELD_CATEGORY_DESC"
 				class="inputbox w25p"
 				multiple="true"
-				showall="true"
+				show_all="true"
 				group="product/physical;product/electronic"
 			/>
 
@@ -67,6 +67,18 @@
 				max="10000000"
 				validate="number"
 			/>
+
+			<field
+				name="abandoned_only"
+				type="radio"
+				label="PLG_SYSTEM_SELLACIOUSREPORTSCART_ABANDONED_ONLY"
+				description="PLG_SYSTEM_SELLACIOUSREPORTSCART_ABANDONED_ONLY_DESC"
+				class="btn-group btn-group-yesno"
+				default="0"
+			>
+				<option value="1">JYES</option>
+				<option value="0">JNO</option>
+			</field>
 
 			<field
 				name="payment_status_type"

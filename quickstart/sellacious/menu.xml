@@ -523,6 +523,17 @@
 				<params>{"menu-anchor_title":"","menu-anchor_css":"file","menu_image":"","menu_text":1,"menu-access":["config.edit"]}</params>
 			</attributes>
 		</menu>
+		<menu>
+			<attributes>
+				<title>MOD_SMARTYMENU_MENU_LINK_IMPORTER_IMPORTS</title>
+				<alias>imports</alias>
+				<link>index.php?option=com_importer&amp;view=imports</link>
+				<type>component</type>
+				<component>com_importer</component>
+				<published>1</published>
+				<params>{"menu-anchor_title":"","menu-anchor_css":"list","menu_image":"","menu_text":1,"menu-access":["config.edit"]}</params>
+			</attributes>
+		</menu>
 	</menu>
 	<menu>
 		<attributes>

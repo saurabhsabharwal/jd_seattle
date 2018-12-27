@@ -33,12 +33,12 @@
 			<option value="">JGLOBAL_SORT_BY</option>
 			<group name="ASC" label="COM_SELLACIOUS_SORT_ASCENDING">
 				<option value="a.id ASC">JGRID_HEADING_ID_ASC</option>
-				<option value="a.context ASC">COM_SELLACIOUS_COTEXT_ASC</option>
+				<option value="a.context ASC">COM_SELLACIOUS_CONTEXT_ASC</option>
 				<option value="a.state ASC">JSTATUS_ASC</option>
 			</group>
 			<group name="DESC" label="COM_SELLACIOUS_SORT_DESCENDING">
 				<option value="a.id DESC">JGRID_HEADING_ID_DESC</option>
-				<option value="a.context DESC">COM_SELLACIOUS_COTEXT_DESC</option>
+				<option value="a.context DESC">COM_SELLACIOUS_CONTEXT_DESC</option>
 				<option value="a.state DESC">JSTATUS_DESC</option>
 			</group>
 		</field>

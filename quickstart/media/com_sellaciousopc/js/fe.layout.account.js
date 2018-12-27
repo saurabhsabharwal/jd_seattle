@@ -1,5 +1,5 @@
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -296,11 +296,13 @@ jQuery(function ($) {
 					$this.opc.setToken(response.data.token);
 					$this.opc.renderMessages({warning: [response.message]}, $this.container);
 					$this.setAccount(response.data, 1);
+					window.location.reload();
 				} else if (response.status == 1023) { // Auto Login Success
 					$this.opc.setToken(response.data.token);
 					$this.opc.renderMessages({success: [response.message]}, $this.container, 2000);
 					$this.setAccount(response.data, 1);
 					$this.edit = false;
+					window.location.reload();
 				} else {                              // Registration failed
 					$this.opc.renderMessages({warning: [response.message]}, $this.container)
 				}
@@ -353,6 +355,7 @@ jQuery(function ($) {
 					$this.opc.renderMessages({success: [response.message]}, $this.container, 2000);
 					$this.setAccount(response.data, 1);
 					$this.edit = false;
+					window.location.reload();
 				} else {                                // Invalid email or password or Login Failed etc
 					$this.opc.renderMessages({warning: [response.message]}, $this.container)
 				}

@@ -10,7 +10,6 @@
 				type="categoryList"
 				label="COM_SELLACIOUS_FIELD_SELECT_CATEGORY_LABEL"
 				description="COM_SELLACIOUS_FIELD_SELECT_CATEGORY_DESC"
-				required="true"
 				group="seller"
 				show_all="true"
 			>

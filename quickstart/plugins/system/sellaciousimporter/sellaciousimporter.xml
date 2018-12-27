@@ -2,12 +2,12 @@
 <extension version="3.1" type="plugin" group="system" method="upgrade">
 	<name>System - Sellacious Importer</name>
 	<author>Izhar Aazmi</author>
-	<creationDate>November 08, 2018</creationDate>
+	<creationDate>December 26, 2018</creationDate>
 	<copyright>Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.</copyright>
 	<license>GNU General Public License version 2 or later; see LICENSE.txt</license>
 	<authorEmail>info@bhartiy.com</authorEmail>
 	<authorUrl>www.bhartiy.com</authorUrl>
-	<version>1.6.0</version>
+	<version>1.6.1-alpha0</version>
 	<description><![CDATA[<div class="alert alert-info"><h5>Sellacious Importer</h5>
 	<p>Allows importing of data into sellacious using CSV data-sheet. <br>
 	The supported CSV format can be downloaded for each category and/or for all categories form the categories and products list pages.</p>

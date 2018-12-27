@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -466,35 +466,6 @@ class ImagesImporter extends AbstractImporter
 	 * @since   1.4.7
 	 */
 	protected function check($fields)
-	{
-	}
-
-	/**
-	 * Perform the initial processing of the temporary table before actual import begins.
-	 *
-	 * @return  bool
-	 *
-	 * @throws  \Exception
-	 *
-	 * @since   1.5.0
-	 */
-	protected function processTemporaryTable()
-	{
-		return true;
-	}
-
-	/**
-	 * Convert the human readable text values from the import CSV to database friendly values to be saved.
-	 *
-	 * @param   \stdClass  $obj  The record from the CSV import table
-	 *
-	 * @return  void
-	 *
-	 * @throws  \Exception
-	 *
-	 * @since   1.5.1
-	 */
-	protected function translate($obj)
 	{
 	}
 }

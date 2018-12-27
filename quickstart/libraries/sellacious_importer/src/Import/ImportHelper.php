@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -10,6 +10,8 @@
 namespace Sellacious\Import;
 
 // no direct access
+use Joomla\Registry\Registry;
+
 defined('_JEXEC') or die;
 
 /**
@@ -123,5 +125,32 @@ class ImportHelper
 		}
 
 		return $template;
+	}
+
+	/**
+	 * Method to get a selected import job by id
+	 *
+	 * @param   int  $id  The import job id
+	 *
+	 * @return  ImportRecord
+	 *
+	 * @throws  \Exception
+	 *
+	 * @since   1.6.1
+	 */
+	public static function getImport($id)
+	{
+		$db    = \JFactory::getDbo();
+		$query = $db->getQuery(true);
+
+		$query->select('a.*')
+		      ->from($db->qn('#__importer_imports', 'a'))
+		      ->where('a.id = ' . (int) $id);
+
+		$result = $db->setQuery($query)->loadObject();
+
+		$import = new ImportRecord($result);
+
+		return $import;
 	}
 }

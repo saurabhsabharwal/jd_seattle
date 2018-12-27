@@ -5,12 +5,12 @@
 	client="sellacious">
 	<name>mod_custom</name>
 	<author>Joomla! Project</author>
-	<creationDate>November 08, 2018</creationDate>
+	<creationDate>December 26, 2018</creationDate>
 	<copyright>Copyright (C) 2005 - 2014 Open Source Matters. All rights reserved.</copyright>
 	<license>GNU General Public License version 2 or later; see LICENSE.txt</license>
 	<authorEmail>admin@joomla.org</authorEmail>
 	<authorUrl>www.joomla.org</authorUrl>
-	<version>1.6.0</version>
+	<version>1.6.1-alpha0</version>
 	<description>MOD_CUSTOM_XML_DESCRIPTION</description>
 	<files>
 		<filename module="mod_custom">mod_custom.php</filename>

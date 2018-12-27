@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -282,6 +282,13 @@ class SellaciousModelUser extends SellaciousModelAdmin
 				if (!$this->helper->config->get('multi_seller'))
 				{
 					$form->removeField('commission', 'seller');
+				}
+
+				if (!empty($data->seller->store_location))
+				{
+					$coordinates = explode(',', $data->seller->store_location);
+					$form->setFieldAttribute('store_location_address', 'lat', $coordinates[0], 'seller');
+					$form->setFieldAttribute('store_location_address', 'lng', $coordinates[1], 'seller');
 				}
 			}
 

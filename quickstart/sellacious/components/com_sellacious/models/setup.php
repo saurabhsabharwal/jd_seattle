@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -144,6 +144,8 @@ class SellaciousModelSetup extends SellaciousModelAdmin
 
 	/**
 	 * Method to save the form data.
+	 *
+	 * @note    This must be kept in sync with \InstallationModelDatabase::getDefaultConfig()
 	 *
 	 * @param   integer  $pk  The id of the primary key.
 	 *
@@ -431,7 +433,7 @@ class SellaciousModelSetup extends SellaciousModelAdmin
 			'show_category_product_count'       => '1',
 			'show_category_products'            => '1',
 			'show_doc_link'                     => '1',
-			'show_licence_to'                   => '1',
+			'show_license_to'                   => '1',
 			'show_order_download_link'          => '1',
 			'show_orders_in_catalogue'          => '1',
 			'show_rate_us'                      => '1',
@@ -489,7 +491,7 @@ class SellaciousModelSetup extends SellaciousModelAdmin
 			$params->set('show_advertisement', 1);
 			$params->set('show_back_to_joomla', 1);
 			$params->set('show_sellacious_version', 1);
-			$params->set('show_licence_to', 1);
+			$params->set('show_license_to', 1);
 		}
 
 		$data = (object) array('com_sellacious' => $params->toArray());

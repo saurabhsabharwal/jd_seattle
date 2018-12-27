@@ -1,5 +1,5 @@
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -18,10 +18,11 @@ jQuery(document).ready(function ($) {
 		var $data = $form.serializeObject();
 		var token = Joomla.getToken();
 		$data[token] = 1;
+		var iOpts = Joomla.getOptions('com_importer.import') || {};
 
 		var settings = {
 			url: 'index.php?option=com_importer',
-			data: $.extend({}, $data, {task: 'import.setOptionsAjax'}),
+			data: $.extend({}, $data, {task: 'import.setOptionsAjax', id: iOpts.id || 0}),
 			type: 'post',
 			dataType: 'json',
 			timeout: 10000,
@@ -53,11 +54,12 @@ jQuery(document).ready(function ($) {
 		var $csrf = {};
 		var token = Joomla.getToken();
 		$csrf[token] = 1;
+		var iOpts = Joomla.getOptions('com_importer.import') || {};
 
 		if ($ajax) $ajax.abort();
 		$ajax = $.ajax({
 			url: 'index.php?option=com_importer&task=import.importAjax',
-			data: $.extend({}, $csrf),
+			data: $.extend({}, iOpts.id || 0, $csrf),
 			type: 'post',
 			dataType: 'json',
 			timeout: 10000

@@ -2,12 +2,12 @@
 <extension type="module" version="3.1" client="administrator" method="upgrade">
 	<name>mod_smartymenu</name>
 	<author>Bhavika Matariya</author>
-	<creationDate>November 08, 2018</creationDate>
+	<creationDate>December 26, 2018</creationDate>
 	<copyright>2012 (c) Bhartiy Web Technologies. All rights reserved.</copyright>
 	<license>SPL Sellacious Private License; see http://www.sellacious.com/spl.html</license>
 	<authorEmail>info@bhartiy.com</authorEmail>
 	<authorUrl>http://bhartiy.com/</authorUrl>
-	<version>1.6.0</version>
+	<version>1.6.1-alpha0</version>
 	<description>MOD_SMARTYMENU_XML_DESCRIPTION</description>
 	<files>
 		<filename module="mod_smartymenu">mod_smartymenu.php</filename>

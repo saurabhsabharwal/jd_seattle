@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -13,6 +13,7 @@ namespace Sellacious\Import;
 defined('_JEXEC') or die;
 
 use Joomla\Registry\Registry;
+use Sellacious\Batch\Batch;
 use Sellacious\Utilities\Timer;
 
 /**
@@ -37,6 +38,13 @@ abstract class AbstractImporter
 	 * @since   1.4.7
 	 */
 	public $timer;
+
+	/**
+	 * @var    Batch
+	 *
+	 * @since   1.6.1
+	 */
+	public $batch;
 
 	/**
 	 * @var    string
@@ -142,6 +150,105 @@ abstract class AbstractImporter
 	}
 
 	/**
+	 * Initialize the importer instance
+	 *
+	 * @param   ImportRecord  $import
+	 *
+	 * @return  void
+	 *
+	 * @throws  \Exception
+	 *
+	 * @since   1.6.1
+	 */
+	public function setup(ImportRecord $import)
+	{
+		$this->setOption('import.id', $import->id);
+		$this->setOption('import.path', $import->path);
+		$this->setOption('import.log_path', $import->log_path);
+		$this->setOption('import.output_path', $import->output_path);
+		$this->setOption('session.user', $import->created_by);
+
+		foreach ($import->options->toArray() as $oKey => $oValue)
+		{
+			$this->setOption($oKey, $oValue);
+		}
+
+		$batch = new Batch;
+		$batch->setProgress($import->progress);
+
+		$this->batch = $batch;
+	}
+
+	/**
+	 * Method to be called by import processors to notify the importer about their progress
+	 *
+	 * @param   string  $name     The step name
+	 * @param   int     $total    The total number of records to process
+	 * @param   int     $ahead    The total number of records already processed
+	 * @param   string  $message  Custom log message, default message will be used if not given
+	 *
+	 * @since   1.6.1
+	 */
+	public function setTicker($name, $total, $ahead, $message = null)
+	{
+		$step = $this->batch->getStep($name);
+
+		if ($total !== null)
+		{
+			$step->setSize($total);
+		}
+
+		if ($message)
+		{
+			$this->timer->log($message);
+		}
+		else
+		{
+			$this->timer->hit($ahead, 1, sprintf('Total: %d %s', $step->getSize(), $name));
+		}
+
+		$step->setTick($ahead, $message);
+
+		$iid = $this->getOption('import.id');
+
+		if ($iid)
+		{
+			$o = (object) array('id' => $iid, 'progress' => (string) $this->batch);
+
+			$this->db->updateObject('#__importer_imports', $o, array('id'));
+		}
+	}
+
+	/**
+	 * Method to be called by import processors to notify the importer about their progress
+	 *
+	 * @param   string  $name     The step name
+	 * @param   string  $message  Custom log message, default message will be used if not given
+	 *
+	 * @since   1.6.1
+	 */
+	public function setComplete($name, $message = null)
+	{
+		$step = $this->batch->getStep($name);
+
+		if ($message)
+		{
+			$this->timer->log($message);
+		}
+
+		$step->setComplete(true);
+
+		$iid = $this->getOption('import.id');
+
+		if ($iid)
+		{
+			$o = (object) array('id' => $iid, 'progress' => (string) $this->batch);
+
+			$this->db->updateObject('#__importer_imports', $o, array('id'));
+		}
+	}
+
+	/**
 	 * Get the import configuration options
 	 *
 	 * @param   string  $key      The name of the parameter to set
@@ -154,6 +261,18 @@ abstract class AbstractImporter
 	public function getOption($key, $default = null)
 	{
 		return $this->options->get($key, $default);
+	}
+
+	/**
+	 * Return the database driver instance linked to this object
+	 *
+	 * @return  \JDatabaseDriver
+	 *
+	 * @since   1.6.1
+	 */
+	public function getDb()
+	{
+		return $this->db;
 	}
 
 	/**
@@ -323,7 +442,7 @@ abstract class AbstractImporter
 		// Mapping column-alias may narrow down the fields list, so use the final list of fields
 		if (!count($this->fields))
 		{
-			return false;
+			throw new \Exception('No fields');
 		}
 
 		// Create table structure with all columns, but we'll insert only [fields => row]
@@ -347,7 +466,7 @@ abstract class AbstractImporter
 
 		$this->db->dropTable($this->importTable, true);
 
-		$queryC = 'CREATE TEMPORARY TABLE ' . $this->db->qn($this->importTable) . " (\n  " . implode(",\n  ", $cols) . "\n);";
+		$queryC = 'CREATE TEMPORARY' . ' TABLE ' . $this->db->qn($this->importTable) . " (\n  " . implode(",\n  ", $cols) . "\n);";
 		$this->db->setQuery($queryC)->execute();
 
 		$this->dispatcher->trigger('onBeforeImportTable', array('com_importer.import.' . $this->name, $this));
@@ -371,8 +490,6 @@ abstract class AbstractImporter
 
 			$offset++;
 
-			set_time_limit(30);
-
 			// Convert the array into an associative array
 			$record = array_combine($this->fields, $row);
 
@@ -381,14 +498,16 @@ abstract class AbstractImporter
 
 			$object = (object) $record;
 
+			// NULL'ify empty column values
 			foreach ($fields as $column)
 			{
-				if (!isset($object->$column) || strlen($object->$column) == 0)
+				if (!isset($object->$column) || strlen($object->$column) === 0)
 				{
 					$object->$column = null;
 				}
 			}
 
+			/** @deprecated: This method will not be called */
 			$this->translate($object);
 
 			$this->preprocessCsvRow($row, $object, $offset);
@@ -413,13 +532,16 @@ abstract class AbstractImporter
 	/**
 	 * Perform the initial processing of the temporary table before actual import begins.
 	 *
-	 * @return  bool
+	 * @return  void
 	 *
 	 * @throws  \Exception
 	 *
 	 * @since   1.5.0
 	 */
-	abstract protected function processTemporaryTable();
+	protected function processTemporaryTable()
+	{
+
+	}
 
 	/**
 	 * Process the batch import process
@@ -441,8 +563,6 @@ abstract class AbstractImporter
 
 		foreach($iterator as $index => $item)
 		{
-			set_time_limit(30);
-
 			// Defer loading as one iteration may update more rows which can be reused subsequently
 			$query->clear()->select('*')->from($this->importTable)->where('x__id = ' . (int) $item->x__id);
 
@@ -469,8 +589,13 @@ abstract class AbstractImporter
 	 * @throws  \Exception
 	 *
 	 * @since   1.5.1
+	 *
+	 * @deprecated   Use preprocessCsvRow() instead
 	 */
-	abstract protected function translate($obj);
+	protected function translate($obj)
+	{
+
+	}
 
 	/**
 	 * Method to import a single record obtained from the CSV
@@ -497,7 +622,7 @@ abstract class AbstractImporter
 			$fields = $this->db->getTableColumns($this->importTable);
 			$fields = array_keys($fields);
 
-			$filename = $this->getOption('output_csv');
+			$filename = $this->getOption('import.output_path');
 
 			if (!$filename)
 			{
@@ -549,5 +674,19 @@ abstract class AbstractImporter
 	 */
 	protected function preprocessCsvRow($row, $record, $offset)
 	{
+	}
+
+	/**
+	 * Get the current user, its important not to use depend on session as CLI has not session
+	 *
+	 * @return  \JUser
+	 *
+	 * @since   1.6.1
+	 */
+	public function getUser()
+	{
+		$uid = $this->getOption('session.user', 0);
+
+		return \JUser::getInstance($uid);
 	}
 }

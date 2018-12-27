@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -256,6 +256,7 @@ class Internal extends Item
 
 			// Calculate sub-total initially, this will be updated when suited
 			$price->sub_total = $price->sales_price * $this->quantity;
+			$price->quantity  = $this->quantity;
 
 			$dispatcher = $this->helper->core->loadPlugins();
 			$dispatcher->trigger('onBeforeProcessCartItemPrice', array('com_sellacious.cart', &$price, &$this));

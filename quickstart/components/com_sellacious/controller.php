@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -26,8 +26,8 @@ class SellaciousController extends SellaciousControllerBase
 	 */
 	public function display($cacheable = false, $urlparams = false)
 	{
-		$view = $this->input->get('view', 'products');
-		$view = $view == 'sellacious' ? 'products' : $view;
+		$view = $this->input->get('view', 'categories');
+		$view = $view == 'sellacious' ? 'categories' : $view;
 
 		$this->input->set('view', $view);
 

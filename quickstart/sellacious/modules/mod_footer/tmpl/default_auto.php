@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -24,7 +24,7 @@ $helper = SellaciousHelper::getInstance();
 <div class="page-footer">
 	<div class="row">
 		<div class="col-xs-12 col-sm-8">
-			<?php if ($helper->config->get('show_licence_to', 1) || !$helper->access->isSubscribed()) : ?>
+			<?php if ($helper->config->get('show_license_to', 1) || !$helper->access->isSubscribed()) : ?>
 				<span class="license-validate pull-left txt-color-white"><i class="fa fa-repeat"></i> &nbsp;</span>
 
 				<span class="license-validate txt-color-white pull-left license-name hidden"><?php

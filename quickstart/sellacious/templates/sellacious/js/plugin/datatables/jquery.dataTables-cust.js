@@ -1,7 +1,7 @@
 /**
  * @summary     DataTables
  * @description Paginate, search and sort HTML tables
- * @version     1.6.0
+ * @version     1.6.1
  * @file        jquery.dataTables.js
  * @author      Allan Jardine (www.sprymedia.co.uk)
  * @contact     www.sprymedia.co.uk/contact

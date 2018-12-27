@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -86,12 +86,12 @@ foreach ($this->items as $i => $item)
 			<img class="image-large" src="<?php echo $image_url; ?>"/>
 			<img class="image-small" src="<?php echo $image_url; ?>"/>
 		</td>
-		<td>
+		<td class="product-editable">
 			<span class="txt-color-red">&nbsp;<i class="<?php echo ArrayHelper::getValue($icons, $item->type, 'fa fa-cube') ?>"></i>&nbsp;</span>
-			<?php echo $canEdit ? JHtml::link($edit_url, $this->escape($item->title)) : $this->escape($item->title); ?> (<?php echo $code; ?>)
+			<?php echo $canEdit ? JHtml::link($edit_url, $this->escape($item->title), array('title' => $this->escape($item->title), 'class' => 'hasTooltip')) : $this->escape($item->title); ?> (<?php echo $code; ?>)
 			<span class="txt-color-red">&nbsp;<a target="_blank" class="hasTooltip" data-placement="right"
-				 	title="<?php echo JText::_('COM_SELLACIOUS_PRODUCT_LINK_FRONTEND_TIP'); ?>"
-				 	href="<?php echo isset($siteRoute) ? $siteRoute : $site_url; ?>"><i class="fa fa-external-link-square"></i></a>&nbsp;</span>
+												 title="<?php echo JText::_('COM_SELLACIOUS_PRODUCT_LINK_FRONTEND_TIP'); ?>"
+												 href="<?php echo isset($siteRoute) ? $siteRoute : $site_url; ?>"><i class="fa fa-external-link-square"></i></a>&nbsp;</span>
 			<br/>
 			<span>
 				<?php
@@ -231,7 +231,7 @@ foreach ($this->items as $i => $item)
 		if ($item->price_display == SellaciousHelperPrice::PRICE_DISPLAY_DEFINED)
 		{
 			?>
-			<td class="nowrap text-right">
+			<td class="nowrap text-center">
 				<?php if ($item->multi_price): ?>
 					<span class="red">*</span>
 				<?php endif; ?>
@@ -275,7 +275,7 @@ foreach ($this->items as $i => $item)
 				<?php endif; ?>
 				</span>
 				<?php
-					$sold_by = $item->seller_store ? : ($item->seller_name ? : ($item->seller_company ? : $item->seller_username));
+					$sold_by = $item->seller_store ?: $item->seller_name ?: $item->seller_company ?: $item->seller_username ?: $item->seller_uid;
 					echo $this->escape($sold_by);
 				?>
 			</td>

@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -19,7 +19,7 @@ jimport('sellacious.loader');
  *
  * @since   1.4.5
  */
-class plgSellaciousMailQueue extends JPlugin
+class plgSellaciousMailQueue extends SellaciousPlugin
 {
 	/**
 	 * Load the language file on instantiation.
@@ -29,15 +29,6 @@ class plgSellaciousMailQueue extends JPlugin
 	 * @since   1.4.5
 	 */
 	protected $autoloadLanguage = true;
-
-	/**
-	 * The cms application instance
-	 *
-	 * @var    JApplicationCms
-	 *
-	 * @since   1.4.5
-	 */
-	protected $app;
 
 	/**
 	 * store previous record before modifying it.

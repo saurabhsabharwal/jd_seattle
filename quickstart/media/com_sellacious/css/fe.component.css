@@ -818,3 +818,9 @@ button.btn-wishlist .fa-heart {
 .captcha-fieldset {
 	padding: 9px 15px;
 }
+
+.modal .close {
+	position: absolute;
+	right: 20px;
+	top: 16px;
+}

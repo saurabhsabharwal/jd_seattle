@@ -1,5 +1,5 @@
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -121,6 +121,30 @@
 			$body.toggleClass('hidden-menu');
 		});
 
+		var $cacheBtn = $('[data-action="rebuild-cache"]');
+
+		if ($cacheBtn.data('state') === 1) {
+			var i;
+			var f = function () {
+				$.ajax({
+					url: 'index.php?option=com_sellacious&task=checkCacheAjax',
+					type: 'get',
+					cache: false,
+					dataType: 'json'
+				}).done(function (response) {
+					// Not running = 1, Running = 2
+					if (response.state === 1) {
+						clearInterval(i);
+						$cacheBtn.removeClass('btn-disabled bg-color-white txt-color-red')
+							.data('state', 0).find('i.fa').removeClass('fa-spin');
+						/view=products/.test(window.location.href)
+							? window.location.href = window.location.href + '' : null;
+					}
+				});
+			};
+			i = setInterval(f, 3000);
+		}
+
 		$body.on("click", '[data-action="launchFullscreen"]', function (b) {
 			b.preventDefault();
 			launchFullscreen(document.documentElement);
@@ -148,6 +172,9 @@
 		}).on("click", '[data-action="rebuild-cache"]', function (b) {
 			b.preventDefault();
 			var $this = $(this);
+
+			if (parseInt($this.data('state')) === 1) { return false; }
+
 			$this.find('.fa').addClass('fa-spin');
 			var $form = $('<form/>', {action: window.location.href, method: 'post'});
 
@@ -155,14 +182,14 @@
 			$('<input>', {type: 'hidden', name: 'task', value: 'products.refreshCache'}).appendTo($form);
 			$('<input>', {type: 'hidden', name: $(this).data('token'), value: 1}).appendTo($form);
 			$form.appendTo($body).submit();
-		}).on("click", '[data-action="refresh-table-media"]', function (b) {
+		}).on("click", '[data-action="system-autofix"]', function (b) {
 			b.preventDefault();
 			var $this = $(this);
 			$this.find('.fa').addClass('fa-spin');
 			var $form = $('<form/>', {action: window.location.href, method: 'post'});
 
 			$('<input>', {type: 'hidden', name: 'option', value: 'com_sellacious'}).appendTo($form);
-			$('<input>', {type: 'hidden', name: 'task', value: 'refreshTableAndMedia'}).appendTo($form);
+			$('<input>', {type: 'hidden', name: 'task', value: 'systemAutofix'}).appendTo($form);
 			$('<input>', {type: 'hidden', name: $(this).data('token'), value: 1}).appendTo($form);
 			$form.appendTo($body).submit();
 		}).on("click", '[data-action="switchLanguage"][data-lang]', function (b) {

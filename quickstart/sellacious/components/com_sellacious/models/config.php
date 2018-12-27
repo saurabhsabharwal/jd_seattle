@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -80,7 +80,7 @@ class SellaciousModelConfig extends SellaciousModelAdmin
 			$params->set('show_advertisement', 1);
 			$params->set('show_back_to_joomla', 1);
 			$params->set('show_sellacious_version', 1);
-			$params->set('show_licence_to', 1);
+			$params->set('show_license_to', 1);
 		}
 
 		$data = (object) array('com_sellacious' => $params->toArray());
@@ -155,7 +155,7 @@ class SellaciousModelConfig extends SellaciousModelAdmin
 			$form->setFieldAttribute('show_advertisement', 'readonly', 'true', 'com_sellacious');
 			$form->setFieldAttribute('show_back_to_joomla', 'readonly', 'true', 'com_sellacious');
 			$form->setFieldAttribute('show_sellacious_version', 'readonly', 'true', 'com_sellacious');
-			$form->setFieldAttribute('show_licence_to', 'readonly', 'true', 'com_sellacious');
+			$form->setFieldAttribute('show_license_to', 'readonly', 'true', 'com_sellacious');
 			$form->setFieldAttribute('allow_client_authorised_users', 'readonly', 'true', 'com_sellacious');
 			$form->setFieldAttribute('allow_credit_limit', 'readonly', 'true', 'com_sellacious');
 		}

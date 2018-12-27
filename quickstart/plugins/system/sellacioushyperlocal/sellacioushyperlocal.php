@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -115,15 +115,13 @@ class plgSystemSellaciousHyperlocal extends SellaciousPlugin
 
 					// Check if the selected units have conversions for Meter unit
 					$productRadius = $hlParams->get('product_radius');
-					$storeRadius   = $hlParams->get('store_radius');
 
 					$meterUnit = $this->helper->unit->loadResult(array('list.select' => 'a.id', 'list.where' => array('a.title = ' . $this->db->quote('Meter'), 'a.symbol = ' . $this->db->quote('m'), 'a.unit_group = ' . $this->db->quote('Length'))));
 					$meterUnit = $meterUnit ? : null;
 
 					$productRate = $this->helper->unit->getRate(isset($productRadius->u) ? $productRadius->u : 0, $meterUnit);
-					$storeRate   = $this->helper->unit->getRate(isset($storeRadius->u) ? $storeRadius->u : 0, $meterUnit);
 
-					if (!isset($productRadius->u) || !isset($storeRadius->u) || (!empty($productRate) && !empty($storeRate)))
+					if (!isset($productRadius->u) || !empty($productRate))
 					{
 						$form->removeField('unit_conversion_note', 'plg_system_sellacioushyperlocal');
 					}
@@ -499,19 +497,27 @@ class plgSystemSellaciousHyperlocal extends SellaciousPlugin
 				return;
 			}
 
-			$productBounds = isset($hyperlocal['product_bounds']) ? $hyperlocal['product_bounds'] : array();
-			$storeBounds   = isset($hyperlocal['store_bounds']) ? $hyperlocal['store_bounds'] : array();
+			$productBounds    = isset($hyperlocal['product_bounds']) ? $hyperlocal['product_bounds'] : array();
+			$productBoundsMin = isset($hyperlocal['product_bounds_min']) ? $hyperlocal['product_bounds_min'] : array();
+			$storeBounds      = isset($hyperlocal['store_bounds']) ? $hyperlocal['store_bounds'] : array();
+			$storeBoundsMin   = isset($hyperlocal['store_bounds_min']) ? $hyperlocal['store_bounds_min'] : array();
 
 			if ($context == 'com_sellacious.helper.product')
 			{
-				if ($hlParams->get('hyperlocal_type') == 1 && array_filter($productBounds))
+				if ($hlParams->get('hyperlocal_type') == 1 && array_filter($productBounds) && array_filter($productBoundsMin))
 				{
 					// Filter by radius
-					$filters['list.join'][]  = array('inner', '#__sellacious_sellers AS ss ON ss.user_id = ps.seller_uid');
-					$filters['list.where'][] = 'SUBSTRING_INDEX(ss.store_location, ",", 1) < ' . $productBounds['north'];
-					$filters['list.where'][] = 'SUBSTRING_INDEX(ss.store_location, ",", 1) > ' . $productBounds['south'];
-					$filters['list.where'][] = 'SUBSTRING_INDEX(ss.store_location, ",", -1) < ' . $productBounds['east'];
-					$filters['list.where'][] = 'SUBSTRING_INDEX(ss.store_location, ",", -1) > ' . $productBounds['west'];
+					$filters['list.join'][] = array('inner', '#__sellacious_sellers AS ss ON ss.user_id = ps.seller_uid');
+
+					$filters['list.where'][] = '((CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", 1) < '  . $productBounds['north'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", 1) < ' . $productBounds['north'] . ' END)';
+					$filters['list.where'][] = '(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", 1) > '  . $productBounds['south'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", 1) > ' . $productBounds['south'] . ' END)';
+					$filters['list.where'][] = '(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", -1) < '  . $productBounds['east'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", -1) < ' . $productBounds['east'] . ' END)';
+					$filters['list.where'][] = '(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", -1) > '  . $productBounds['west'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", -1) > ' . $productBounds['west'] . ' END))';
+
+					$filters['list.where'][] = '!((CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", 1) < '  . $productBoundsMin['north'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", 1) < ' . $productBoundsMin['north'] . ' END)';
+					$filters['list.where'][] = '(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", 1) > '  . $productBoundsMin['south'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", 1) > ' . $productBoundsMin['south'] . ' END)';
+					$filters['list.where'][] = '(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", -1) < '  . $productBoundsMin['east'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", -1) < ' . $productBoundsMin['east'] . ' END)';
+					$filters['list.where'][] = '(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", -1) > '  . $productBoundsMin['west'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", -1) > ' . $productBoundsMin['west'] . ' END))';
 				}
 				elseif ($hlParams->get('hyperlocal_type') == 2 && isset($hyperlocal['id']))
 				{
@@ -539,12 +545,17 @@ class plgSystemSellaciousHyperlocal extends SellaciousPlugin
 			}
 			elseif ($context == 'com_sellacious.helper.seller')
 			{
-				if ($hlParams->get('hyperlocal_type') == 1 && array_filter($storeBounds))
+				if ($hlParams->get('hyperlocal_type') == 1 && array_filter($storeBounds) && array_filter($storeBoundsMin))
 				{
-					$filters['list.where'][] = 'SUBSTRING_INDEX(a.store_location, ",", 1) < ' . $storeBounds['north'];
+					$filters['list.where'][] = '(SUBSTRING_INDEX(a.store_location, ",", 1) < ' . $storeBounds['north'];
 					$filters['list.where'][] = 'SUBSTRING_INDEX(a.store_location, ",", 1) > ' . $storeBounds['south'];
 					$filters['list.where'][] = 'SUBSTRING_INDEX(a.store_location, ",", -1) < ' . $storeBounds['east'];
-					$filters['list.where'][] = 'SUBSTRING_INDEX(a.store_location, ",", -1) > ' . $storeBounds['west'];
+					$filters['list.where'][] = 'SUBSTRING_INDEX(a.store_location, ",", -1) > ' . $storeBounds['west'] . ')';
+
+					$filters['list.where'][] = '!(SUBSTRING_INDEX(a.store_location, ",", 1) < ' . $storeBoundsMin['north'];
+					$filters['list.where'][] = 'SUBSTRING_INDEX(a.store_location, ",", 1) > ' . $storeBoundsMin['south'];
+					$filters['list.where'][] = 'SUBSTRING_INDEX(a.store_location, ",", -1) < ' . $storeBoundsMin['east'];
+					$filters['list.where'][] = 'SUBSTRING_INDEX(a.store_location, ",", -1) > ' . $storeBoundsMin['west'] . ')';
 				}
 				elseif ($hlParams->get('hyperlocal_type') == 2 && isset($hyperlocal['id']))
 				{
@@ -610,14 +621,20 @@ class plgSystemSellaciousHyperlocal extends SellaciousPlugin
 				return;
 			}
 
-			$productBounds = isset($hyperlocal['product_bounds']) ? $hyperlocal['product_bounds'] : array();
+			$productBounds    = isset($hyperlocal['product_bounds']) ? $hyperlocal['product_bounds'] : array();
+			$productBoundsMin = isset($hyperlocal['product_bounds_min']) ? $hyperlocal['product_bounds_min'] : array();
 
-			if ($hlParams->get('hyperlocal_type') == 1 && array_filter($productBounds))
+			if ($hlParams->get('hyperlocal_type') == 1 && array_filter($productBounds) && array_filter($productBoundsMin))
 			{
-				$query->where('SUBSTRING_INDEX(a.store_location, ",", 1) < ' . $productBounds['north']);
-				$query->where('SUBSTRING_INDEX(a.store_location, ",", 1) > ' . $productBounds['south']);
-				$query->where('SUBSTRING_INDEX(a.store_location, ",", -1) < ' . $productBounds['east']);
-				$query->where('SUBSTRING_INDEX(a.store_location, ",", -1) > ' . $productBounds['west']);
+				$query->where('((CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", 1) < '  . $productBounds['north'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", 1) < ' . $productBounds['north'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", 1) > '  . $productBounds['south'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", 1) > ' . $productBounds['south'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", -1) < '  . $productBounds['east'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", -1) < ' . $productBounds['east'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", -1) > '  . $productBounds['west'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", -1) > ' . $productBounds['west'] . ' END))');
+
+				$query->where('!((CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", 1) < '  . $productBoundsMin['north'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", 1) < ' . $productBoundsMin['north'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", 1) > '  . $productBoundsMin['south'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", 1) > ' . $productBoundsMin['south'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", -1) < '  . $productBoundsMin['east'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", -1) < ' . $productBoundsMin['east'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", -1) > '  . $productBoundsMin['west'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", -1) > ' . $productBoundsMin['west'] . ' END))');
 			}
 			elseif ($hlParams->get('hyperlocal_type') == 2 && isset($hyperlocal['id']))
 			{
@@ -651,14 +668,20 @@ class plgSystemSellaciousHyperlocal extends SellaciousPlugin
 				return;
 			}
 
-			$productBounds = isset($hyperlocal['product_bounds']) ? $hyperlocal['product_bounds'] : array();
+			$productBounds    = isset($hyperlocal['product_bounds']) ? $hyperlocal['product_bounds'] : array();
+			$productBoundsMin = isset($hyperlocal['product_bounds_min']) ? $hyperlocal['product_bounds_min'] : array();
 
-			if ($hlParams->get('hyperlocal_type') == 1 && array_filter($productBounds))
+			if ($hlParams->get('hyperlocal_type') == 1 && array_filter($productBounds) && array_filter($productBoundsMin))
 			{
-				$query->where('SUBSTRING_INDEX(a.store_location, ",", 1) < ' . $productBounds['north']);
-				$query->where('SUBSTRING_INDEX(a.store_location, ",", 1) > ' . $productBounds['south']);
-				$query->where('SUBSTRING_INDEX(a.store_location, ",", -1) < ' . $productBounds['east']);
-				$query->where('SUBSTRING_INDEX(a.store_location, ",", -1) > ' . $productBounds['west']);
+				$query->where('((CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", 1) < '  . $productBounds['north'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", 1) < ' . $productBounds['north'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", 1) > '  . $productBounds['south'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", 1) > ' . $productBounds['south'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", -1) < '  . $productBounds['east'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", -1) < ' . $productBounds['east'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", -1) > '  . $productBounds['west'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", -1) > ' . $productBounds['west'] . ' END))');
+
+				$query->where('!((CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", 1) < '  . $productBoundsMin['north'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", 1) < ' . $productBoundsMin['north'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", 1) > '  . $productBoundsMin['south'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", 1) > ' . $productBoundsMin['south'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", -1) < '  . $productBoundsMin['east'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", -1) < ' . $productBoundsMin['east'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", -1) > '  . $productBoundsMin['west'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", -1) > ' . $productBoundsMin['west'] . ' END))');
 			}
 			elseif ($hlParams->get('hyperlocal_type') == 2 && isset($hyperlocal['id']))
 			{
@@ -729,14 +752,20 @@ class plgSystemSellaciousHyperlocal extends SellaciousPlugin
 				return;
 			}
 
-			$productBounds = isset($hyperlocal['product_bounds']) ? $hyperlocal['product_bounds'] : array();
+			$productBounds    = isset($hyperlocal['product_bounds']) ? $hyperlocal['product_bounds'] : array();
+			$productBoundsMin = isset($hyperlocal['product_bounds_min']) ? $hyperlocal['product_bounds_min'] : array();
 
-			if ($hlParams->get('hyperlocal_type') == 1 && array_filter($productBounds))
+			if ($hlParams->get('hyperlocal_type') == 1 && array_filter($productBounds) && array_filter($productBoundsMin))
 			{
-				$query->where('SUBSTRING_INDEX(a.store_location, ",", 1) < ' . $productBounds['north']);
-				$query->where('SUBSTRING_INDEX(a.store_location, ",", 1) > ' . $productBounds['south']);
-				$query->where('SUBSTRING_INDEX(a.store_location, ",", -1) < ' . $productBounds['east']);
-				$query->where('SUBSTRING_INDEX(a.store_location, ",", -1) > ' . $productBounds['west']);
+				$query->where('((CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", 1) < '  . $productBounds['north'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", 1) < ' . $productBounds['north'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", 1) > '  . $productBounds['south'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", 1) > ' . $productBounds['south'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", -1) < '  . $productBounds['east'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", -1) < ' . $productBounds['east'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", -1) > '  . $productBounds['west'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", -1) > ' . $productBounds['west'] . ' END))');
+
+				$query->where('!((CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", 1) < '  . $productBoundsMin['north'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", 1) < ' . $productBoundsMin['north'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", 1) > '  . $productBoundsMin['south'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", 1) > ' . $productBoundsMin['south'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", -1) < '  . $productBoundsMin['east'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", -1) < ' . $productBoundsMin['east'] . ' END)');
+				$query->where('(CASE WHEN a.product_location != \'\' THEN SUBSTRING_INDEX(a.product_location, ",", -1) > '  . $productBoundsMin['west'] .' ELSE SUBSTRING_INDEX(a.store_location, ",", -1) > ' . $productBoundsMin['west'] . ' END))');
 			}
 			elseif ($hlParams->get('hyperlocal_type') == 2 && isset($hyperlocal['id']))
 			{
@@ -770,14 +799,20 @@ class plgSystemSellaciousHyperlocal extends SellaciousPlugin
 				return;
 			}
 
-			$storeBounds = isset($hyperlocal['store_bounds']) ? $hyperlocal['store_bounds'] : array();
+			$storeBounds    = isset($hyperlocal['store_bounds']) ? $hyperlocal['store_bounds'] : array();
+			$storeBoundsMin = isset($hyperlocal['store_bounds_min']) ? $hyperlocal['store_bounds_min'] : array();
 
-			if ($hlParams->get('hyperlocal_type') == 1 && array_filter($storeBounds))
+			if ($hlParams->get('hyperlocal_type') == 1 && array_filter($storeBounds) && array_filter($storeBoundsMin))
 			{
-				$query->where('SUBSTRING_INDEX(a.store_location, ",", 1) < ' . $storeBounds['north']);
+				$query->where('(SUBSTRING_INDEX(a.store_location, ",", 1) < ' . $storeBounds['north']);
 				$query->where('SUBSTRING_INDEX(a.store_location, ",", 1) > ' . $storeBounds['south']);
 				$query->where('SUBSTRING_INDEX(a.store_location, ",", -1) < ' . $storeBounds['east']);
-				$query->where('SUBSTRING_INDEX(a.store_location, ",", -1) > ' . $storeBounds['west']);
+				$query->where('SUBSTRING_INDEX(a.store_location, ",", -1) > ' . $storeBounds['west'] . ')');
+
+				$query->where('!(SUBSTRING_INDEX(a.store_location, ",", 1) < ' . $storeBoundsMin['north']);
+				$query->where('SUBSTRING_INDEX(a.store_location, ",", 1) > ' . $storeBoundsMin['south']);
+				$query->where('SUBSTRING_INDEX(a.store_location, ",", -1) < ' . $storeBoundsMin['east']);
+				$query->where('SUBSTRING_INDEX(a.store_location, ",", -1) > ' . $storeBoundsMin['west'] . ')');
 			}
 			elseif ($hlParams->get('hyperlocal_type') == 2 && isset($hyperlocal['id']))
 			{
@@ -885,7 +920,7 @@ class plgSystemSellaciousHyperlocal extends SellaciousPlugin
 				}
 
 				// Get Store distance (radius)
-				$storeRadius = $hlParams->get('store_radius');
+				$storeRadius = $hlParams->get('product_radius');
 				$meterUnit   = $this->helper->unit->loadResult(array(
 					'list.select' => 'a.id',
 					'list.where'  => array(
@@ -896,7 +931,12 @@ class plgSystemSellaciousHyperlocal extends SellaciousPlugin
 				));
 				$meterUnit   = $meterUnit ? : null;
 
-				$storeDistance = $this->helper->unit->convert($storeRadius->m ? : 0, $storeRadius->u, $meterUnit);
+				$storeDistance = 0;
+
+				if (isset($storeRadius->m))
+				{
+					$storeDistance = $this->helper->unit->convert($storeRadius->m ? : 0, $storeRadius->u, $meterUnit);
+				}
 
 				if (!is_array($sellerUids))
 				{
@@ -1092,16 +1132,31 @@ class plgSystemSellaciousHyperlocal extends SellaciousPlugin
 			return JText::_('PLG_SYSTEM_SELLACIOUSHYPERLOCAL_NOT_AVAILABLE_' . strtoupper($type));
 		}
 
-		$date = JFactory::getDate();
+		$date       = JFactory::getDate();
+		$user       = JFactory::getUser();
+		$app        = JFactory::getApplication();
+		$hyperlocal = $app->getUserState('hyperlocal_location', array());
+
+		$timezone = isset($hyperlocal['timezone']) && !empty($hyperlocal['timezone']) ? $hyperlocal['timezone'] : '';
+
+		if ($user->id)
+		{
+			$timezone = $user->id;
+		}
+
+		if ($timezone)
+		{
+			$date = $this->helper->core->fixDate($date->toSql(true), 'UTC', $timezone);
+		}
 
 		foreach ($timings as $timing)
 		{
 			if ($timing['week_day'] == ($date->format('N') - 1))
 			{
-				$from = JFactory::getDate($timing['from_time'])->getTimestamp();
-				$to   = JFactory::getDate($timing['to_time'])->getTimestamp();
+				$from = new DateTime($timing['from_time']);
+				$to   = new DateTime($timing['to_time']);
 
-				$now = $date->getTimestamp();
+				$now = new DateTime($date->toSql(true));
 
 				if ($from <= $now && $to >= $now)
 				{
@@ -1109,7 +1164,7 @@ class plgSystemSellaciousHyperlocal extends SellaciousPlugin
 				}
 				elseif ($now < $from)
 				{
-					$diff       = $date->diff(JFactory::getDate($timing['from_time']));
+					$diff       = $now->diff($from);
 					$diffFormat = $diff->format('%i') . ' Minute(s) ';
 
 					if (!empty($diff->format('%h')))
@@ -1252,6 +1307,12 @@ class plgSystemSellaciousHyperlocal extends SellaciousPlugin
 		{
 			$table = JTable::getInstance('SellerTimings', 'SellaciousTable');
 			$table->load(array('seller_uid' => $sellerUid, 'type' => $type, 'week_day' => $weekday));
+
+			if ($timing['full_day'] == 1)
+			{
+				$timing['from_time'] = '00:00';
+				$timing['to_time']   = '00:00';
+			}
 
 			$timing['type']       = $type;
 			$timing['seller_uid'] = $sellerUid;

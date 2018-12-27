@@ -190,14 +190,14 @@
 						description="COM_SELLACIOUS_SPLCATEGORY_FIELD_BORDER_STYLE_DESC"
 						class="w100p medium-input"
 					>
-						<option value="dotted">COM_SELLACIOUS_SPCATEGORY_OPTION_DOTTED</option>
-						<option value="dashed">COM_SELLACIOUS_SPCATEGORY_OPTION_DASHED</option>
-						<option value="solid">COM_SELLACIOUS_SPCATEGORY_OPTION_SOLID</option>
-						<option value="Double">COM_SELLACIOUS_SPCATEGORY_OPTION_DOUBLE</option>
-						<option value="groove">COM_SELLACIOUS_SPCATEGORY_OPTION_GROOVE</option>
-						<option value="ridge">COM_SELLACIOUS_SPCATEGORY_OPTION_RIDGE</option>
-						<option value="inset">COM_SELLACIOUS_SPCATEGORY_OPTION_INSET</option>
-						<option value="outset">COM_SELLACIOUS_SPCATEGORY_OPTION_OUTSET</option>
+						<option value="dotted">COM_SELLACIOUS_SPLCATEGORY_OPTION_DOTTED</option>
+						<option value="dashed">COM_SELLACIOUS_SPLCATEGORY_OPTION_DASHED</option>
+						<option value="solid">COM_SELLACIOUS_SPLCATEGORY_OPTION_SOLID</option>
+						<option value="Double">COM_SELLACIOUS_SPLCATEGORY_OPTION_DOUBLE</option>
+						<option value="groove">COM_SELLACIOUS_SPLCATEGORY_OPTION_GROOVE</option>
+						<option value="ridge">COM_SELLACIOUS_SPLCATEGORY_OPTION_RIDGE</option>
+						<option value="inset">COM_SELLACIOUS_SPLCATEGORY_OPTION_INSET</option>
+						<option value="outset">COM_SELLACIOUS_SPLCATEGORY_OPTION_OUTSET</option>
 					</field>
 					<field
 						name="border-color"
@@ -245,14 +245,14 @@
 					description="COM_SELLACIOUS_SPLCATEGORY_FIELD_BORDER_STYLE_DESC"
 					class="w100p medium-input"
 				>
-					<option value="dotted">COM_SELLACIOUS_SPCATEGORY_OPTION_DOTTED</option>
-					<option value="dashed">COM_SELLACIOUS_SPCATEGORY_OPTION_DASHED</option>
-					<option value="solid">COM_SELLACIOUS_SPCATEGORY_OPTION_SOLID</option>
-					<option value="Double">COM_SELLACIOUS_SPCATEGORY_OPTION_DOUBLE</option>
-					<option value="groove">COM_SELLACIOUS_SPCATEGORY_OPTION_GROOVE</option>
-					<option value="ridge">COM_SELLACIOUS_SPCATEGORY_OPTION_RIDGE</option>
-					<option value="inset">COM_SELLACIOUS_SPCATEGORY_OPTION_INSET</option>
-					<option value="outset">COM_SELLACIOUS_SPCATEGORY_OPTION_OUTSET</option>
+					<option value="dotted">COM_SELLACIOUS_SPLCATEGORY_OPTION_DOTTED</option>
+					<option value="dashed">COM_SELLACIOUS_SPLCATEGORY_OPTION_DASHED</option>
+					<option value="solid">COM_SELLACIOUS_SPLCATEGORY_OPTION_SOLID</option>
+					<option value="Double">COM_SELLACIOUS_SPLCATEGORY_OPTION_DOUBLE</option>
+					<option value="groove">COM_SELLACIOUS_SPLCATEGORY_OPTION_GROOVE</option>
+					<option value="ridge">COM_SELLACIOUS_SPLCATEGORY_OPTION_RIDGE</option>
+					<option value="inset">COM_SELLACIOUS_SPLCATEGORY_OPTION_INSET</option>
+					<option value="outset">COM_SELLACIOUS_SPLCATEGORY_OPTION_OUTSET</option>
 				</field>
 				<field
 					name="border-color"

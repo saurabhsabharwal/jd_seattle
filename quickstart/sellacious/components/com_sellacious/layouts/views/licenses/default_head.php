@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -30,7 +30,7 @@ $saveOrder = ($listOrder == 'a.ordering' && strtolower($listDirn) == 'asc');
 		<?php echo JHtml::_('searchtools.sort', 'JGLOBAL_TITLE', 'a.title', $listDirn, $listOrder); ?>
 	</th>
 	<th class="nowrap center" width="100px">
-		<?php echo JText::_('COM_SELLACIOUS_LICENCES_HEADING_MODIFIED'); ?>
+		<?php echo JText::_('COM_SELLACIOUS_LICENSES_HEADING_MODIFIED'); ?>
 	</th>
 	<th class="nowrap hidden-phone" style="width:1%;">
 		<?php echo JHtml::_('searchtools.sort', 'JGRID_HEADING_ID', 'a.id', $listDirn, $listOrder); ?>

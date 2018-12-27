@@ -65,6 +65,7 @@
 				<row value="product_attachments">COM_SELLACIOUS_CONFIG_PRODUCT_FIELDS_OPTION_PRODUCT_ATTACHMENTS</row>
 				<row value="seller_attachments">COM_SELLACIOUS_CONFIG_PRODUCT_FIELDS_OPTION_SELLER_ATTACHMENTS</row>
 				<row value="eproduct_delivery" columns="electronic">COM_SELLACIOUS_CONFIG_PRODUCT_FIELDS_OPTION_EPRODUCT_DELIVERY</row>
+				<row value="location">COM_SELLACIOUS_CONFIG_PRODUCT_FIELDS_OPTION_LOCATION</row>
 			</field>
 		</fieldset>
 	</fields>

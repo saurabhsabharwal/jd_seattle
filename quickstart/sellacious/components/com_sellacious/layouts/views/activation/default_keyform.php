@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -82,10 +82,10 @@ JText::script('COM_SELLACIOUS_LICENSE_ACTIVATION_NOT_ACTIVATED');
 					</div>
 
 					<a href="javascript:void(0);" class="btn btn-primary pull-left padding-20-0 margin-right-5 btn-resend"><?php
-						echo JText::_('COM_SELLACIOUS_LICENCE_ACTIVATION_LINK_RESEND_BUTTON'); ?> &nbsp; <i class="fa fa-repeat"></i></a>
+						echo JText::_('COM_SELLACIOUS_LICENSE_ACTIVATION_LINK_RESEND_BUTTON'); ?> &nbsp; <i class="fa fa-repeat"></i></a>
 
 					<a href="javascript:void(0);" class="btn btn-primary pull-left padding-20-0 margin-right-5 btn-skip-activate"><?php
-						echo JText::_('COM_SELLACIOUS_LICENCE_ACTIVATION_SKIP_LABEL'); ?> &nbsp; <i class="fa fa-pause"></i></a>
+						echo JText::_('COM_SELLACIOUS_LICENSE_ACTIVATION_SKIP_LABEL'); ?> &nbsp; <i class="fa fa-pause"></i></a>
 
 					<a href="javascript:void(0);" class="btn btn-primary pull-right padding-20-0 margin-right-5 btn-manual-check auto-check"><?php
 						echo JText::_('COM_SELLACIOUS_LICENSE_ACTIVATION_BUTTON_MANUALLY') ?> &nbsp; <i class="fa fa-pencil"></i></a>

@@ -1,5 +1,5 @@
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -638,6 +638,35 @@ var SellaciousViewProduct = {
 			var regex = /^(http:|https:|)\/\/(player.|www.)?(vimeo\.com|youtu(be\.com|\.be|be\.googleapis\.com))\/(video\/|embed\/|watch\?v=|v\/)?([A-Za-z0-9._%-]*)(&\S+)?/;
 			value.match(regex);
 			return (RegExp.$3.indexOf('youtu') > -1 || RegExp.$3.indexOf('vimeo') > -1);
+		});
+
+		$(document).on('onMapChangeLocation', function (event, lat, lng) {
+			var location = (Math.round(lat * 1000000) / 1000000) + ',' + (Math.round(lng * 1000000) / 1000000);
+			$('#jform_basic_location').val(location);
+		});
+
+		$(document).on('OnMapGeoCode', function (event, address_components) {
+			$.each(address_components, function(key, component) {
+				if ($.inArray('sublocality_level_1', component.types) != -1) {
+					$('#jform_basic_geolocation_locality').val(component.long_name);
+				} else if ($.inArray('sublocality_level_2', component.types) != -1) {
+					$('#jform_basic_geolocation_sublocality').val(component.long_name);
+				} else if ($.inArray('locality', component.types) != -1) {
+					$('#jform_basic_geolocation_city').val(component.long_name);
+				} else if ($.inArray('administrative_area_level_2', component.types) != -1) {
+					$('#jform_basic_geolocation_district').val(component.long_name);
+				} else if ($.inArray('administrative_area_level_1', component.types) != -1) {
+					$('#jform_basic_geolocation_state').val(component.long_name);
+				} else if ($.inArray('country', component.types) != -1) {
+					$('#jform_basic_geolocation_country').val(component.long_name);
+				} else if ($.inArray('postal_code', component.types) != -1) {
+					$('#jform_basic_geolocation_zip').val(component.long_name);
+				}
+			});
+		});
+
+		$('#jform_basic_location').on('change', function () {
+			$(document).trigger('onMapChangeLatLng', [$(this).val().split(',')]);
 		});
 	});
 })(jQuery);

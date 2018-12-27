@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -11,14 +11,37 @@
 defined('_JEXEC') or die;
 
 use Sellacious\Import\ImportHandler;
+use Sellacious\Import\ImportHelper;
 
 /**
  * Importer model.
  *
  * @since   1.5.2
  */
-class ImporterModelImport extends SellaciousModel
+class ImporterModelImport extends SellaciousModelAdmin
 {
+	/**
+	 * Method to auto-populate the model state.
+	 *
+	 * This method should only be called once per instantiation and is designed
+	 * to be called on the first call to the getState() method unless the model
+	 * configuration flag to ignore the request is set.
+	 *
+	 * @return  void
+	 *
+	 * @note    Calling getState in this method will result in recursion.
+	 *
+	 * @since   3.0
+	 */
+	protected function populateState()
+	{
+		parent::populateState();
+
+		$importId = $this->app->input->getInt('id');
+
+		$this->state->set('import.id', $importId);
+	}
+
 	/**
 	 * Method to get a table object, load it if necessary.
 	 *
@@ -41,7 +64,8 @@ class ImporterModelImport extends SellaciousModel
 	 *
 	 * @param   string  $handler  The requested import handler identifier
 	 *
-	 * @return  void
+	 * @return  int
+	 *
 	 * @throws  Exception
 	 *
 	 * @since   1.5.2
@@ -57,12 +81,19 @@ class ImporterModelImport extends SellaciousModel
 		 * The plugin must also set the session state values that needs to persist for subsequent calls.
 		 */
 		$dispatcher = JEventDispatcher::getInstance();
-		$result     = $dispatcher->trigger('onImportUploadSource', array('com_importer.import', $handler));
 
-		if (count($result) == 0 || $app->getUserState('com_importer.import.state', null) === null)
+		$dispatcher->trigger('onImportUploadSource', array('com_importer.import', $handler));
+
+		$importId = $app->getUserState('com_importer.import.state.id');
+
+		if (!$importId)
 		{
 			throw new Exception(JText::_('COM_IMPORTER_IMPORT_ERROR_NO_UPLOAD_HANDLER'));
 		}
+
+		$this->app->setUserState('com_importer.import.state.id', null);
+
+		return $importId;
 	}
 
 	/**
@@ -70,6 +101,7 @@ class ImporterModelImport extends SellaciousModel
 	 * Plugin(s) shall detect the active state from session and act if needed.
 	 *
 	 * @return  void
+	 *
 	 * @throws  Exception
 	 *
 	 * @since   1.5.2
@@ -95,6 +127,7 @@ class ImporterModelImport extends SellaciousModel
 	 * Get a list of currently supported import handlers.
 	 *
 	 * @return  ImportHandler[]
+	 *
 	 * @throws  Exception
 	 *
 	 * @since   1.5.2
@@ -111,12 +144,12 @@ class ImporterModelImport extends SellaciousModel
 		$dispatcher = JEventDispatcher::getInstance();
 		$dispatcher->trigger('onCollectHandlers', array('com_importer.import', &$handlers));
 
-		$app    = JFactory::getApplication();
-		$active = $app->getUserState('com_importer.import.state.handler');
+		$active = $this->getState('import.id');
+		$import = ImportHelper::getImport($active);
 
-		if (array_key_exists($active, $handlers))
+		if (array_key_exists($import->handler, $handlers))
 		{
-			$handlers[$active]->setActive(true);
+			$handlers[$import->handler]->setActive(true);
 		}
 
 		return $handlers;

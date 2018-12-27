@@ -1,5 +1,5 @@
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -16,12 +16,13 @@ jQuery(document).ready(function ($) {
 		var interval = 0;
 		var data = {};
 		data[$token] = 1;
+		var iOpts = Joomla.getOptions('com_importer.import') || {};
 
 		var ping = function () {
 			if ($ajax) $ajax.abort();
 			$ajax = $.ajax({
 				url: 'index.php?option=com_sellacious&task=import.importAjax',
-				data: data,
+				data: $.extend({}, data, {id: iOpts.id || 0}),
 				type: 'post',
 				dataType: 'json',
 				timeout: 15000
@@ -68,7 +69,7 @@ jQuery(document).ready(function ($) {
 
 			$.ajax({
 				url: 'index.php?option=com_sellacious&task=import.setMappingAjax',
-				data: $.extend({}, data, {alias: alias}),
+				data: $.extend({}, data, {alias: alias, id: iOpts.id || 0}),
 				type: 'post',
 				dataType: 'json',
 				timeout: 15000

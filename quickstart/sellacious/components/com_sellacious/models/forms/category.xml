@@ -99,8 +99,8 @@
 			<field
 				name="banners_on_product_listing"
 				type="radio"
-				label="COM_SELLACIOUS_CATEGORY_FIELD_BANNERS_ON_PRODUCT_LISTNG_LABEL"
-				description="COM_SELLACIOUS_CATEGORY_FIELD_BANNERS_ON_PRODUCT_LISTNG_DESC"
+				label="COM_SELLACIOUS_CATEGORY_FIELD_BANNERS_ON_PRODUCT_LISTING_LABEL"
+				description="COM_SELLACIOUS_CATEGORY_FIELD_BANNERS_ON_PRODUCT_LISTING_DESC"
 				default="0"
 			>
 				<option value="1">JENABLED</option>

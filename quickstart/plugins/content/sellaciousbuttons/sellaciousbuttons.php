@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -17,15 +17,8 @@ use Joomla\Utilities\ArrayHelper;
  *
  * @since   1.3.0
  */
-class PlgContentSellaciousButtons extends JPlugin
+class PlgContentSellaciousButtons extends SellaciousPlugin
 {
-	/**
-	 * @var  JApplicationCms
-	 *
-	 * @since   1.3.0
-	 */
-	protected $app;
-
 	/**
 	 * Plugin to load query form data and populate the message object with its text format.
 	 *
@@ -41,7 +34,7 @@ class PlgContentSellaciousButtons extends JPlugin
 	public function onContentPrepare($context, &$article, $params, $page = 0)
 	{
 		// Don't run this plugin when the content is being indexed or when not in site
-		if (!$this->app->isSite() || $context == 'com_finder.indexer')
+		if (!$this->app->isClient('site') || $context == 'com_finder.indexer')
 		{
 			return true;
 		}

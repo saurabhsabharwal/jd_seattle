@@ -176,6 +176,7 @@ input.invalid {
 }
 .jarviswidget.license-form {
 	border: 1px solid #47a8d1;
+	margin-top: 70px;
 }
 .jarviswidget.license-form>.widget-body {
 	border-width: 0;

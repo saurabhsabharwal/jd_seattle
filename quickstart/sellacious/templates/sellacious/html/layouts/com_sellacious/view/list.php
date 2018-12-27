@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -43,7 +43,7 @@ $originalOrders = array();
 			<?php foreach ($data->items as $i=>$item):?>
 			cb = f['cb' +<?php echo $i;?>];
 			if (cb && cb.checked) {
-				if (confirm("<?php echo JText::_('COM_SELLACIOUS_' . strtoupper($data->name) . '_CONFIRM_DELETE') ?>")) {
+				if (confirm("<?php echo JText::_(strtoupper($that->getOption()) . '_' . strtoupper($data->name) . '_CONFIRM_DELETE') ?>")) {
 					Joomla.submitform(task);
 				}
 				return;

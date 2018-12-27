@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     com_sellaciousreporting
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -38,7 +38,14 @@ foreach ($this->items as $i => $item)
 
 	ReportingHelper::canEditReport($item->id, $canEdit);
 
-	$handler = \Sellacious\Report\ReportHelper::getHandler($item->handler);
+	try
+	{
+		$handler = \Sellacious\Report\ReportHelper::getHandler($item->handler);
+	}
+	catch (Exception $e)
+	{
+		$handler = null;
+	}
 	?>
 	<tr role="row">
 		<td class="nowrap text-center hidden-phone">
@@ -73,7 +80,7 @@ foreach ($this->items as $i => $item)
 
 		</td>
 		<td class="nowrap center">
-			<?php echo $handler->getLabel(); ?>
+			<?php echo $handler ? $handler->getLabel() : JText::_('COM_SELLACIOUSREPORTING_HANDLER_UNAVAILABLE'); ?>
 		</td>
 		<td class="nowrap center">
 			<?php echo $reportId; ?>

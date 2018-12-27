@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -16,8 +16,8 @@ $template = $displayData;
 
 JHtml::_('script', 'plg_system_sellaciousimporter/import.images.js', false, true);
 
-$logfile = $this->getState('logfile');
-$active  = strlen($logfile) && file_exists($logfile);
+$import = $this->getActiveImport();
+$active = $import && strlen($import->log_path) && file_exists($import->log_path);
 ?>
 <form action="<?php echo JRoute::_('index.php?option=com_importer') ?>"
 	  method="post" class="form-horizontal form-import" enctype="multipart/form-data">
@@ -32,6 +32,8 @@ $active  = strlen($logfile) && file_exists($logfile);
 			<div class="import-action">
 			<button type="button" class="btn btn-sm btn-warning btn-import active"><i class="fa fa-spinner"></i>&nbsp;
 				<?php echo JText::_('PLG_SYSTEM_SELLACIOUSIMPORTER_BUTTON_VIEW_STATUS'); ?></button>
+			<button type="button" class="btn btn-sm btn-primary btn-resume active"><i class="fa fa-repeat"></i>&nbsp;
+				<?php echo JText::_('PLG_SYSTEM_SELLACIOUSIMPORTER_BUTTON_RESUME'); ?></button>
 			<button type="button" class="btn btn-sm btn-danger"
 					onclick="Joomla.submitform('import.cancel', this.form, false);"><i class="fa fa-times"></i>&nbsp;
 				<?php echo JText::_('PLG_SYSTEM_SELLACIOUSIMPORTER_BUTTON_CANCEL_IMPORT'); ?></button>
@@ -77,4 +79,9 @@ AC
 	<br>
 	<button type="button" class="btn btn-sm btn-default btn-import active"><i class="fa fa-spinner"></i>&nbsp;
 		<?php echo JText::_('PLG_SYSTEM_SELLACIOUSIMPORTER_BUTTON_VIEW_STATUS'); ?></button>
+	<button type="button" class="btn btn-sm btn-primary btn-resume active"><i class="fa fa-repeat"></i>&nbsp;
+		<?php echo JText::_('PLG_SYSTEM_SELLACIOUSIMPORTER_BUTTON_RESUME'); ?></button>
+	<a href="<?php echo JRoute::_('index.php?option=com_importer&view=import') ?>"
+	   class="btn btn-sm btn-danger"><i class="fa fa-times"></i>&nbsp;
+		<?php echo JText::_('PLG_SYSTEM_SELLACIOUSIMPORTER_BUTTON_CANCEL_IMPORT'); ?></a>
 </div>

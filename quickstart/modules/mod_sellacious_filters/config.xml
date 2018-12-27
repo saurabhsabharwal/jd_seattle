@@ -35,8 +35,8 @@
 				name="hide_listing_type_filter"
 				type="radio"
 				default="0"
-				label="MOD_SELLACIOUS_FILTERS_CONFIG_FIELD_HIDE_LISYING_TYPE_FILTER_LABEL"
-				description="MOD_SELLACIOUS_FILTERS_CONFIG_FIELD_HIDE_LISYING_TYPE_FILTER_DESC">
+				label="MOD_SELLACIOUS_FILTERS_CONFIG_FIELD_HIDE_LISTING_TYPE_FILTER_LABEL"
+				description="MOD_SELLACIOUS_FILTERS_CONFIG_FIELD_HIDE_LISTING_TYPE_FILTER_DESC">
 				<option value="1">JYES</option>
 				<option value="0">JNO</option>
 			</field>

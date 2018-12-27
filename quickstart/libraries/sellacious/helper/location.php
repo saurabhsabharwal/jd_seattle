@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -1198,5 +1198,55 @@ class SellaciousHelperLocation extends SellaciousHelperBase
 		{
 			return null;
 		}
+	}
+
+	/**
+	 * Method to save geolocation details
+	 *
+	 * @param   string  $context   The calling context
+	 * @param   int     $recordId  The reference id with respect to the context
+	 * @param   array   $data      The data to save
+	 *
+	 * @return  bool
+	 *
+	 * @since   1.6.1
+	 */
+	public function saveGeoLocation($context, $recordId, $data)
+	{
+		$table = SellaciousTable::getInstance('Geolocation');
+		$table->load(array(
+			'context'   => $context,
+			'record_id' => $recordId,
+		));
+
+		$data['context']   = $context;
+		$data['record_id'] = $recordId;
+
+		$table->bind($data);
+		$table->store();
+		$table->check();
+
+		return true;
+	}
+
+	/**
+	 * Method to get Geolocation details
+	 *
+	 * @param   string  $context  The calling context
+	 * @param   int     $recordId The record id
+	 *
+	 * @return  array
+	 *
+	 * @since   1.6.1
+	 */
+	public function getGeoLocation($context, $recordId)
+	{
+		$table = SellaciousTable::getInstance('Geolocation');
+		$table->load(array(
+			'context'   => $context,
+			'record_id' => $recordId,
+		));
+
+		return $table->getProperties(1);
 	}
 }

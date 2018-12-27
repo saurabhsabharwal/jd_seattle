@@ -1,5 +1,5 @@
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -265,6 +265,15 @@ var SellaciousViewUser = {
 	$(document).ready(function () {
 		document.formvalidator.setHandler('mobile', function (value) {
 			return /^(\+\d{1,3}[- ]?)?\d{10}$/.test(value) || /NULL/.test(value);
+		});
+
+		$(document).on('onMapChangeLocation', function (event, lat, lng) {
+			var location = (Math.round(lat * 1000000) / 1000000) + ',' + (Math.round(lng * 1000000) / 1000000);
+			$('#jform_seller_store_location').val(location);
+		});
+
+		$('#jform_seller_store_location').on('change', function () {
+			$(document).trigger('onMapChangeLatLng', [$(this).val().split(',')]);
 		});
 	});
 })(jQuery);

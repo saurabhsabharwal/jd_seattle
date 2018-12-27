@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -27,7 +27,7 @@ $saveOrder = ($listOrder == 'a.ordering' && strtolower($listDirn) == 'asc');
 		<?php echo JText::_('JSTATUS'); ?>
 	</th>
 	<th class="nowrap">
-		<?php echo JText::_('COM_SELLACIOUS_EMAILTEMPLATES_HEADING_COTEXT'); ?>
+		<?php echo JText::_('COM_SELLACIOUS_EMAILTEMPLATES_HEADING_CONTEXT'); ?>
 	</th>
 	<th class="nowrap" width="40%">
 		<?php echo JText::_('COM_SELLACIOUS_EMAILTEMPLATES_HEADING_SUBJECT'); ?>

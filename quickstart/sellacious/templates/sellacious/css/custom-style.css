@@ -2301,3 +2301,22 @@ div#myTabContent3 > .tab-pane.active {
 	}
 
 }
+
+table#productList td.product-editable {
+	max-width: 200px;
+	overflow: hidden;
+}
+
+table#productList td.product-editable a{
+	display: inline-block;
+	max-width: 250px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	margin-bottom: -4px;
+}
+@media only screen and (max-width: 2050px) {
+	table#productList td.product-editable {
+		max-width: 350px;
+		overflow: hidden;
+	}
+}

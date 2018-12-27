@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -87,7 +87,13 @@ class SellaciousHelper
 
 		JLog::addLogger($options, JLog::ALL, array('error', 'warning', 'note', 'jerror'));
 
-		if (!JFactory::getApplication()->isClient('sellacious'))
+		$options['text_file'] = 'route-errorss.log';
+		$options['format']    = "{DATE}\t{TIME}\t{LEVEL}\t{CODE}\t{MESSAGE}";
+
+		JLog::addLogger($options, JLog::ALL, array('jroute'));
+
+		// Do not error in Cli environment
+		if (JFactory::$application && !JFactory::getApplication()->isClient('sellacious'))
 		{
 			JFormHelper::loadFieldClass('radio');
 			JFormHelper::loadFieldClass('checkbox');
@@ -114,9 +120,12 @@ class SellaciousHelper
 		$lang->load('com_sellacious', JPATH_SITE . '/components/com_sellacious', $language_tag);
 		$lang->load('com_sellacious', JPATH_SITE, $language_tag);
 
-		// Todo: move this to a separate behaviour function/class
-		JText::script('COM_SELLACIOUS_LABEL_KEYBOARD_SHORTCUTS', true);
-		JText::script('COM_SELLACIOUS_USER_LOAD_WAIT_ADDRESS', true);
+		if (JFactory::$document && JFactory::getDocument()->getType() === 'html')
+		{
+			// Todo: move this to a separate behaviour function/class
+			JText::script('COM_SELLACIOUS_LABEL_KEYBOARD_SHORTCUTS', true);
+			JText::script('COM_SELLACIOUS_USER_LOAD_WAIT_ADDRESS', true);
+		}
 
 		$this->compatibility();
 	}
@@ -305,8 +314,18 @@ class SellaciousHelper
 		{
 			require_once dirname(__DIR__) . '/joomla/html/calendar.php';
 
+			//Accordion Override
+			require_once dirname(__DIR__) . '/joomla/html/Accordion.php';
+
 			JHtml::register('calendar', array('Sellacious\Html\Calendar', 'calendar'));
 			JHtml::register('behavior.calendar', array('Sellacious\Html\Calendar', 'behaviorCalendar'));
+
+
+			//Accordion Overrides
+			JHtml::register('bootstrap.startAccordion', array('Sellacious\Html\Accordion', 'startAccordion'));
+			JHtml::register('bootstrap.endAccordion', array('Sellacious\Html\Accordion', 'endAccordion'));
+			JHtml::register('bootstrap.addSlide', array('Sellacious\Html\Accordion', 'addSlide'));
+			JHtml::register('bootstrap.endSlide', array('Sellacious\Html\Accordion', 'endSlide'));
 		}
 	}
 }

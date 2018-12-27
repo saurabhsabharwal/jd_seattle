@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -30,6 +30,8 @@ $col1 = array(
 	'jform_basic_introtext',
 	'jform_basic_primary_image',
 	'jform_basic_primary_video_url',
+	'jform_basic_address',
+	'jform_basic_location',
 );
 
 $col2 = array(

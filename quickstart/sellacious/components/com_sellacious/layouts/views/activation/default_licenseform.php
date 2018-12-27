@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -65,9 +65,9 @@ JText::script('COM_SELLACIOUS_LICENSE_ACTIVATION_NOT_ACTIVATED');
 							<a class="alert-link pull-right padding-20-0 btn-have-license" href="javascript:void(0);"
 							   		data-on="<?php echo $haveLic ? '1' : '0' ?>"><span
 										class="<?php echo $haveLic ? 'hidden' : '' ?>"><?php
-								echo JText::_('COM_SELLACIOUS_LICENCE_ENTER_KEY_BUTTON_LABEL'); ?></span><span
+								echo JText::_('COM_SELLACIOUS_LICENSE_ENTER_KEY_BUTTON_LABEL'); ?></span><span
 										class="<?php echo $haveLic ? '' : 'hidden' ?>"><?php
-								echo JText::_('COM_SELLACIOUS_LICENCE_REGISTER_NEW_BUTTON_LABEL'); ?></span></a>
+								echo JText::_('COM_SELLACIOUS_LICENSE_REGISTER_NEW_BUTTON_LABEL'); ?></span></a>
 
 							<div class="clearfix"></div>
 
@@ -155,7 +155,7 @@ JText::script('COM_SELLACIOUS_LICENSE_ACTIVATION_NOT_ACTIVATED');
 							<h3 class="pull-left"><strong>Step 2</strong> - Verification</h3>
 
 							<a class="alert-link pull-right padding-20-0 btn-skip-activate" href="javascript:void(0);"><?php
-								echo JText::_('COM_SELLACIOUS_LICENCE_ACTIVATION_SKIP_LABEL'); ?></a>
+								echo JText::_('COM_SELLACIOUS_LICENSE_ACTIVATION_SKIP_LABEL'); ?></a>
 
 							<div class="clearfix"></div>
 
@@ -190,7 +190,7 @@ JText::script('COM_SELLACIOUS_LICENSE_ACTIVATION_NOT_ACTIVATED');
 								</div>
 
 								<a class="alert-link pull-right btn-resend" href="javascript:void(0);"><?php
-									echo JText::_('COM_SELLACIOUS_LICENCE_ACTIVATION_LINK_RESEND_BUTTON'); ?></a>
+									echo JText::_('COM_SELLACIOUS_LICENSE_ACTIVATION_LINK_RESEND_BUTTON'); ?></a>
 
 							</div>
 

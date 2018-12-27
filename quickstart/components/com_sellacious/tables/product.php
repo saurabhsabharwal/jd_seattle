@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -124,17 +124,25 @@ class SellaciousTableProduct extends SellaciousTable
 				$this->alias = JFactory::getDate()->format('Y-m-d-H-i-s') . '-' . rand(10000, 99999);
 			}
 
-			$filter = array('list.select' => 'a.id', 'alias' => $this->alias);
+			// If the alias we have, is existing for any other product or a category let's increment it
+			$filterP = array(
+				'list.select' => 'a.id',
+				'list.where'  => 'a.id != ' . (int) $this->id,
+				'alias'       => $this->alias,
+			);
+			$filterC = array(
+				'list.select' => 'a.id',
+				'alias'       => $this->alias,
+			);
 
-			// If the alias we have, is existing for another product or any variant let's increment it
-			while ((($pk = $this->helper->product->loadResult($filter)) && ($pk != $this->id || $this->id == 0))
-			       || $this->helper->variant->loadResult($filter))
+			while ($this->helper->product->loadResult($filterP) || $this->helper->category->loadResult($filterC))
 			{
 				if ($this->_incrementAlias)
 				{
 					$this->alias = StringHelper::increment($this->alias, 'dash');
 
-					$filter = array('list.select' => 'a.id', 'alias' => $this->alias);
+					$filterP['alias'] = $this->alias;
+					$filterC['alias'] = $this->alias;
 				}
 				else
 				{

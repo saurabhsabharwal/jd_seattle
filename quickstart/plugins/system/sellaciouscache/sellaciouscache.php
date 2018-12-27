@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -9,7 +9,9 @@
  */
 // no direct access
 use Joomla\Utilities\ArrayHelper;
-use Sellacious\Cache;
+use Sellacious\Cache\CacheHelper;
+use Sellacious\Cache\Prices;
+use Sellacious\Cache\Products;
 use Sellacious\Cart;
 
 defined('_JEXEC') or die('Restricted access');
@@ -76,13 +78,7 @@ class plgSystemSellaciousCache extends SellaciousPlugin
 
 			try
 			{
-				$pCache = new Cache\Products;
-				$rCache = new Cache\Prices;
-				$sCache = new Cache\Specifications;
-
-				$pCache->build();
-				$rCache->build();
-				$sCache->build();
+				CacheHelper::buildCache();
 			}
 			catch (Exception $e)
 			{
@@ -130,38 +126,38 @@ class plgSystemSellaciousCache extends SellaciousPlugin
 
 			if ($context === 'com_sellacious.product')
 			{
-				$pCache = new Cache\Products;
+				$pCache = new Products;
 				$pCache->refresh('products', $table->id);
 
-				$rCache = new Cache\Prices;
+				$rCache = new Prices;
 				$rCache->refresh('products', $table->id);
 			}
 			elseif ($context == 'com_sellacious.rating' && $table->get('type') == 'product')
 			{
-				$pCache = new Cache\Products;
+				$pCache = new Products;
 				$pCache->refresh('productratings', $table->product_id);
 			}
 			elseif ($context === 'com_sellacious.variant')
 			{
-				$pCache = new Cache\Products;
+				$pCache = new Products;
 				$pCache->refresh('variants', $table->id);
 			}
 			elseif ($context === 'com_sellacious.user')
 			{
-				$pCache = new Cache\Products;
+				$pCache = new Products;
 				$pCache->refresh('users', $table->id);
 			}
 			elseif ($context === 'com_sellacious.product.price')
 			{
-				$pCache = new Cache\Products;
+				$pCache = new Products;
 				$pCache->refresh('prices', $table->id);
 
-				$rCache = new Cache\Prices;
+				$rCache = new Prices;
 				$rCache->refresh('prices', $table->id);
 			}
 			elseif ($context === 'com_sellacious.product.psx')
 			{
-				$pCache = new Cache\Products;
+				$pCache = new Products;
 				$pCache->refresh('psx', $table->id);
 			}
 			elseif ($context === 'com_sellacious.productlisting')
@@ -174,7 +170,7 @@ class plgSystemSellaciousCache extends SellaciousPlugin
 				 * @var  $listing_ids
 				 */
 				// We need to update all products-variant-seller combination as stock/seller-count etc will be affected for all.
-				$pCache = new Cache\Products;
+				$pCache = new Products;
 				$pCache->refresh('products', $table->product_ids);
 			}
 			elseif ($context == 'com_sellacious.setup')
@@ -223,15 +219,15 @@ class plgSystemSellaciousCache extends SellaciousPlugin
 
 			if ($context === 'com_sellacious.product')
 			{
-				$pCache = new Cache\Products;
+				$pCache = new Products;
 				$pCache->refresh('products', $pks);
 
-				$rCache = new Cache\Prices;
+				$rCache = new Prices;
 				$rCache->refresh('products', $pks);
 			}
 			elseif ($context === 'com_sellacious.variant')
 			{
-				$pCache = new Cache\Products;
+				$pCache = new Products;
 				$pCache->refresh('variants', $pks);
 			}
 			elseif ($context === 'com_sellacious.product.selling')
@@ -285,7 +281,7 @@ class plgSystemSellaciousCache extends SellaciousPlugin
 			$items      = $this->helper->order->getOrderItems($payment->order_id, 'a.product_id');
 			$productIds = ArrayHelper::getColumn($items, 'product_id');
 
-			$pCache = new Cache\Products;
+			$pCache = new Products;
 			$pCache->refresh('products', $productIds);
 		}
 
@@ -310,7 +306,7 @@ class plgSystemSellaciousCache extends SellaciousPlugin
 			$items      = $this->helper->order->getOrderItems($orderId, 'a.product_id');
 			$productIds = ArrayHelper::getColumn($items, 'product_id');
 
-			$pCache = new Cache\Products;
+			$pCache = new Products;
 			$pCache->refresh('products', $productIds);
 		}
 
@@ -334,10 +330,16 @@ class plgSystemSellaciousCache extends SellaciousPlugin
 		if ($context == 'com_sellacious.order')
 		{
 			// Should we update here directly and specifically?
-			$productIds = ArrayHelper::getColumn($products, 'product_id');
+			$pks = ArrayHelper::getColumn($products, 'product_id');
 
-			$pCache = new Cache\Products;
-			$pCache->refresh('products', $productIds);
+			try
+			{
+				$pCache = new Products;
+				$pCache->refresh('products', $pks);
+			}
+			catch (Exception $e)
+			{
+			}
 		}
 
 		return true;

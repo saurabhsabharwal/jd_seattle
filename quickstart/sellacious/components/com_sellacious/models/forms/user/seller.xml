@@ -63,6 +63,20 @@
 				<option value=""/>
 			</field>
 			<field
+				name="store_location_group"
+				type="fieldgroup"
+				label="COM_SELLACIOUS_PROFILE_FIELD_STORE_LOCATION_LABEL"
+				description="COM_SELLACIOUS_PROFILE_FIELD_STORE_LOCATION_DESC"
+			/>
+			<field
+				name="store_location_address"
+				type="mapaddress"
+				label="COM_SELLACIOUS_PROFILE_FIELD_STORE_LOCATION_ADDRESS_LABEL"
+				description="COM_SELLACIOUS_PROFILE_FIELD_STORE_LOCATION_ADDRESS_DESC"
+				class="inputbox w40p"
+				autocomplete="off"
+			/>
+			<field
 				name="store_location"
 				type="text"
 				label="COM_SELLACIOUS_PROFILE_FIELD_SELLER_STORE_LOCATION_LABEL"

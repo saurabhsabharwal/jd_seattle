@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -12,10 +12,9 @@ defined('_JEXEC') or die;
 
 /** @var  PlgSystemSellaciousImporter  $this */
 /** @var  stdClass  $displayData */
-$template   = $displayData;
-$active     = (string) $this->getState('handler');
-$templateId = (int) $this->getState('template');
-$isActive   = $active == $template->import_type && $templateId == $template->id;
+$template = $displayData;
+$import   = $this->getActiveImport();
+$isActive = $import && $import->handler == $template->import_type && $import->template == $template->id;
 ?>
 <div class="importer-block <?php echo $isActive ? 'is-active alert-info' : ''; ?>">
 

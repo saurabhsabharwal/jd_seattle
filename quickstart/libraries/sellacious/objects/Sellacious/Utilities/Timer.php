@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -81,7 +81,7 @@ class Timer
 		if (!$logfile)
 		{
 			$now      = \JFactory::getDate()->format('Y-m-d H-i-s', true);
-			$tmp_path = \JFactory::getApplication()->get('tmp_path');
+			$tmp_path = \JFactory::getConfig()->get('tmp_path');
 			$logfile  = $tmp_path . '/' . $name . '-' . $now . '.log';
 		}
 
@@ -114,21 +114,21 @@ class Timer
 	 *
 	 * @param   string  $note  The note for the process started which this timer is about tracking
 	 *
-	 * @return  void
+	 * @return  string  The message text
 	 *
 	 * @since   1.4.7
 	 */
 	public function start($note)
 	{
 		$now      = microtime(true);
-		$dateTime = \JHtml::_('date', 'now', 'Y-m-d H:i:s T');
+		$dateTime = \JFactory::getDate()->format('Y-m-d H:i:s T'); // \JHtml::_('date', 'now', 'Y-m-d H:i:s T');
 
 		$this->running = true;
 		$this->start   = $now;
 		$this->last    = $now;
 		$this->end     = 0;
 
-		$this->log(\JText::sprintf('COM_SELLACIOUS_TIMER_START', $this->name, $this->start, $dateTime, $note), true);
+		return $this->log(\JText::sprintf('COM_SELLACIOUS_TIMER_START', $this->name, $this->start, $dateTime, $note), true);
 	}
 
 	/**
@@ -138,7 +138,7 @@ class Timer
 	 * @param   int     $interval  After each <var>$interval</var> number of progress the log will be written and not on every hit
 	 * @param   string  $note      The note for the tracked running process
 	 *
-	 * @return  void
+	 * @return  string  The message text
 	 *
 	 * @since   1.4.7
 	 */
@@ -148,14 +148,16 @@ class Timer
 		{
 			$last = $this->last;
 			$now  = microtime(true);
-			$time = \JHtml::_('date', 'now', 'H:i:s T');
+			$time = \JFactory::getDate()->format('H:i:s T');
 
 			$this->last = $now;
 
 			$iDuration = round($now - $last, 4);
 
-			$this->log(\JText::sprintf('COM_SELLACIOUS_TIMER_HIT', $count, $now, $time, $iDuration, $note), true);
+			return $this->log(\JText::sprintf('COM_SELLACIOUS_TIMER_HIT', $count, $now, $time, $iDuration, $note), true);
 		}
+
+		return null;
 	}
 
 	/**
@@ -163,7 +165,7 @@ class Timer
 	 *
 	 * @param   string  $note  The note for the process which this timer is tracking
 	 *
-	 * @return  void
+	 * @return  string  The message text
 	 *
 	 * @since   1.4.7
 	 */
@@ -171,16 +173,19 @@ class Timer
 	{
 		$last     = $this->last;
 		$now      = microtime(true);
-		$dateTime = \JHtml::_('date', 'now', 'Y-m-d H:i:s T');
+		$dateTime = \JFactory::getDate()->format('Y-m-d H:i:s T');
 
 		$this->last = $now;
 		$this->end  = $now;
 		$iDuration  = round($now - $last, 4);
 
-		$this->log(\JText::sprintf('COM_SELLACIOUS_TIMER_END', $this->name, $now, $dateTime, $iDuration, $note), true);
+		$msg = $this->log(\JText::sprintf('COM_SELLACIOUS_TIMER_END', $this->name, $now, $dateTime, $iDuration, $note), true);
+
 		$this->log(\JText::sprintf('COM_SELLACIOUS_MEMORY_USAGE', number_format(memory_get_peak_usage(true))));
 
 		$this->running = false;
+
+		return $msg;
 	}
 
 	/**
@@ -188,7 +193,7 @@ class Timer
 	 *
 	 * @param   string  $note  The note for the process which this timer is tracking
 	 *
-	 * @return  void
+	 * @return  string  The message text
 	 *
 	 * @since   1.4.7
 	 */
@@ -197,20 +202,23 @@ class Timer
 		if ($this->running)
 		{
 			$now      = microtime(true);
-			$dateTime = \JHtml::_('date', 'now', 'Y-m-d H:i:s T');
+			$dateTime = \JFactory::getDate()->format('Y-m-d H:i:s T');
 
 			$this->last = $now;
 			$this->end  = $now;
 
-			$this->log(\JText::sprintf('COM_SELLACIOUS_TIMER_INTERRUPT', $this->name, $now, $dateTime, $note), true);
+			$msg = $this->log(\JText::sprintf('COM_SELLACIOUS_TIMER_INTERRUPT', $this->name, $now, $dateTime, $note), true);
 		}
 		else
 		{
-			$this->log(\JText::sprintf('COM_SELLACIOUS_TIMER_FAIL_START', $this->name, $note));
+			$msg = $this->log(\JText::sprintf('COM_SELLACIOUS_TIMER_FAIL_START', $this->name, $note));
 		}
 
 		$this->log(\JText::sprintf('COM_SELLACIOUS_MEMORY_USAGE', number_format(memory_get_peak_usage(true))));
+
 		$this->running = false;
+
+		return $msg;
 	}
 
 	/**
@@ -231,7 +239,7 @@ class Timer
 	 * @param   string  $entry  The log entry message
 	 * @param   bool    $ts     Whether to include timestamp since start
 	 *
-	 * @return  void
+	 * @return  string  The message text
 	 *
 	 * @since   1.4.7
 	 */
@@ -243,5 +251,7 @@ class Timer
 		$message = ($ts ? 'T = ' . $tDuration . ' – ' : '') . str_replace("\n", ' ', $entry);
 
 		file_put_contents($this->log, $message . PHP_EOL, FILE_APPEND);
+
+		return $message;
 	}
 }

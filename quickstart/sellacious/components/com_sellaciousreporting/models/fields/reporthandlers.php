@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     com_sellaciousreporting
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -46,9 +46,16 @@ class JFormFieldReportHandlers extends JFormFieldList
 
 		foreach ($handlers as $name)
 		{
-			$handler = ReportHelper::getHandler($name);
+			try
+			{
+				$handler = ReportHelper::getHandler($name);
 
-			$options[] = JHtml::_('select.option', $handler->getName(), $handler->getLabel(), 'value', 'text');
+				$options[] = JHtml::_('select.option', $handler->getName(), $handler->getLabel(), 'value', 'text');
+			}
+			catch (Exception $e)
+			{
+				// Do nothing
+			}
 		}
 		return array_merge(parent::getOptions(), $options);
 	}

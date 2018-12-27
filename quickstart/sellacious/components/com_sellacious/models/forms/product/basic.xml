@@ -109,6 +109,22 @@
 				class="inputbox w75p validate-primary_video"
 			/>
 			<field
+				name="address"
+				type="mapaddress"
+				label="COM_SELLACIOUS_PRODUCT_FIELD_ADDRESS_LABEL"
+				description="COM_SELLACIOUS_PRODUCT_FIELD_ADDRESS_DESC"
+				class="inputbox medium-input"
+				autocomplete="off"
+			/>
+			<field
+				name="location"
+				type="text"
+				label="COM_SELLACIOUS_PRODUCT_FIELD_LOCATION_LABEL"
+				description="COM_SELLACIOUS_PRODUCT_FIELD_LOCATION_DESC"
+				class="inputbox medium-input"
+				filter="string"
+			/>
+			<field
 				name="images"
 				type="uploader"
 				label="COM_SELLACIOUS_PRODUCT_FIELD_IMAGES_LABEL"
@@ -139,6 +155,43 @@
 				showRemove="true"
 				/>
 			/>
+			<fields name="geolocation">
+				<field
+					type="hidden"
+					name="zip"
+					default=""
+				/>
+				<field
+					type="hidden"
+					name="sublocality"
+					default=""
+				/>
+				<field
+					type="hidden"
+					name="locality"
+					default=""
+				/>
+				<field
+					type="hidden"
+					name="city"
+					default=""
+				/>
+				<field
+					type="hidden"
+					name="district"
+					default=""
+				/>
+				<field
+					type="hidden"
+					name="state"
+					default=""
+				/>
+				<field
+					type="hidden"
+					name="country"
+					default=""
+				/>
+			</fields>
 		</fields>
 	</fieldset>
 </form>

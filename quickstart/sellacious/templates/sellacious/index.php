@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -8,6 +8,7 @@
  * @author      Izhar Aazmi <info@bhartiy.com> - http://www.bhartiy.com
  */
 // no direct access.
+use Sellacious\Cache\CacheHelper;
 use Sellacious\Language\LanguageHelper;
 
 defined('_JEXEC') or die;
@@ -149,17 +150,24 @@ JFactory::getDocument()->addScriptOptions('sellacious.jarvis_site', $helper->cor
 
 				<!-- Cache & Sync button -->
 				<div class="sync-media">
-					<a href="javascript:void(0)" class="btn" data-action="rebuild-cache"
-						data-token="<?php echo JSession::getFormToken(); ?>"><i class="fa fa-refresh"></i> <span class="unmini-text">Cache</span></a>
+					<?php if (!CacheHelper::isRunning()): ?>
+						<a href="javascript:void(0)" class="btn" data-action="rebuild-cache"
+							data-token="<?php echo JSession::getFormToken(); ?>">
+								<i class="fa fa-refresh"></i> <span class="unmini-text">Cache</span></a>
+					<?php else: ?>
+						<a href="javascript:void(0)" class="btn btn-disabled bg-color-white txt-color-red" data-action="rebuild-cache" data-state="1"
+						   data-token="<?php echo JSession::getFormToken(); ?>">
+							<i class="fa fa-refresh fa-spin"></i> <span class="unmini-text">Cache</span></a>
+					<?php endif; ?>
 
-					<a href="javascript:void(0)" class="btn" data-action="refresh-table-media"
+					<a href="javascript:void(0)" class="btn" data-action="system-autofix"
 					   data-token="<?php echo JSession::getFormToken(); ?>"><i class="fa fa-wrench" aria-hidden="true"></i> <span class="unmini-text">Auto Fix</span></a>
 				</div>
 				<!-- end Cache & Sync button -->
 
 				<div class="side-items">
 					<?php if (isset($helper) && $helper->config->get('show_doc_link', 1) || !$helper->access->isSubscribed()): ?>
-						<a href="https://www.sellacious.com/documentation" target="_blank" title=<?php echo JText::_('TPL_SELLACIOUS_DOCUMENT_TITLE'); ?> class="primary">
+						<a href="https://www.sellacious.com/documentation-v2" target="_blank" title=<?php echo JText::_('TPL_SELLACIOUS_DOCUMENT_TITLE'); ?> class="primary">
 							<i class="fa fa-book"></i> <span class="unmini-text"><?php echo JText::_('TPL_SELLACIOUS_DOCUMENTATION'); ?></span></a>
 					<?php endif; ?>
 					<?php if (isset($helper) && $helper->config->get('show_support_link', 1) || !$helper->access->isSubscribed()): ?>

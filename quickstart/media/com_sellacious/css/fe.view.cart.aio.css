@@ -71,12 +71,14 @@ div.cart-aio > div.legend {
 #address-editor .control-label {
 	text-align: left;
 	width: 130px;
+	float: left;
 }
 
 #address-editor .controls {
-	margin-left: 130px;
 	padding-right: 6px;
 	margin-right: 6px;
+	float: left;
+	width: calc(100% - 130px);
 }
 
 @media (max-width: 767px) {

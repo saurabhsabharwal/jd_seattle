@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -12,7 +12,7 @@ defined('_JEXEC') or die;
 
 use Joomla\Registry\Registry;
 use Joomla\Utilities\ArrayHelper;
-use Sellacious\Cache;
+use Sellacious\Cache\Products;
 
 /**
  * Sellacious model.
@@ -140,6 +140,11 @@ class SellaciousModelProduct extends SellaciousModelAdmin
 		)
 		{
 			$data->{$data->basic->type} = $this->helper->product->getAttributesByType($data->id, $data->basic->type);
+		}
+
+		if ($data->basic->type == 'electronic')
+		{
+			$data->basic->geolocation = $this->helper->location->getGeoLocation('products', $data->id);
 		}
 
 		// Get the product specifications
@@ -284,6 +289,8 @@ class SellaciousModelProduct extends SellaciousModelAdmin
 			$seller_uid = $registry->get('seller_uid');
 			$categories = $this->helper->category->getParents($registry->get('categories'), true);
 
+			$form->setFieldAttribute('language', 'product_id', $product_id);
+
 			if ($basicEdit)
 			{
 				$form->loadFile('product/basic');
@@ -325,6 +332,13 @@ class SellaciousModelProduct extends SellaciousModelAdmin
 				foreach ($xmlElements as $xmlElement)
 				{
 					$form->load($xmlElement);
+				}
+
+				if (!empty($data->basic->location))
+				{
+					$coordinates = explode(',', $data->basic->location);
+					$form->setFieldAttribute('address', 'lat', $coordinates[0], 'basic');
+					$form->setFieldAttribute('address', 'lng', $coordinates[1], 'basic');
 				}
 			}
 			else
@@ -626,6 +640,11 @@ class SellaciousModelProduct extends SellaciousModelAdmin
 			{
 				$form->setFieldAttribute('delivery_mode', 'type', 'hidden', 'seller');
 				$form->setFieldAttribute('delivery_mode', 'default', 'download', 'seller');
+			}
+
+			if (!$editCols->get('location'))
+			{
+				$form->removeField('location', 'basic');
 			}
 		}
 		elseif (!$allowCreate)
@@ -958,7 +977,15 @@ class SellaciousModelProduct extends SellaciousModelAdmin
 						$basic->set('language', $data['language']);
 					}
 
+					$geolocation = $basic->get('geolocation');
+					$basic->offsetUnset('geolocation');
+
 					$table->save($basic->toArray());
+
+					// Save geolocation
+					$geolocation->address = $basic->get('address');
+					$geolocation->coordinates = $basic->get('location');
+					$this->helper->location->saveGeoLocation('products', $table->get('id'), (array) $geolocation);
 				}
 
 				// Get updated record id (for new inserts)
@@ -1130,7 +1157,7 @@ class SellaciousModelProduct extends SellaciousModelAdmin
 				$this->app->setUserState('com_sellacious.edit.product.assoc_id', null);
 			}
 
-			$dispatcher->trigger('onContentAfterSave', array('com_sellacious.product', $table, $isNew));
+			$dispatcher->trigger('onContentAfterSave', array('com_sellacious.product', $table, $isNew, $data));
 		}
 		catch (Exception $e)
 		{
@@ -1837,7 +1864,7 @@ class SellaciousModelProduct extends SellaciousModelAdmin
 				$table->store();
 
 				// Update cache
-				$pCache = new Cache\Products;
+				$pCache = new Products;
 				$pCache->refresh('products', $productId);
 			}
 			else

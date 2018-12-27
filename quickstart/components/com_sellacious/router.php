@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -8,6 +8,7 @@
  * @author      Izhar Aazmi <info@bhartiy.com> - http://www.bhartiy.com
  */
 // no direct access
+use Joomla\CMS\Router\Exception\RouteNotFoundException;
 use Joomla\Registry\Registry;
 
 defined('_JEXEC') or die;
@@ -102,10 +103,11 @@ class SellaciousRouter extends JComponentRouterBase
 
 		$this->viewSegments = new Registry($segments);
 
+		$this->addView('sellacious');
 		$this->addView('addresses');
 		$this->addView('cart', array('aio', 'cancelled', 'complete', 'empty', 'failed'));
 		$this->addView('categories', array(), 'category_id');
-		$this->addView('compare');
+		$this->addView('compare', array(), 'c');
 		$this->addView('downloads');
 		$this->addView('license', array(), 'id');
 		$this->addView('order', array('invoice', 'password', 'payment', 'print', 'receipt'), 'id');
@@ -113,13 +115,13 @@ class SellaciousRouter extends JComponentRouterBase
 		$this->addView('product', array('modal', 'query'), 'p');
 		$this->addView('products', array(), 'category_id');
 		$this->addView('profile');
-		$this->addView('register');
+		$this->addView('register', array(), 'catid');
+		$this->addView('reviews');
 		$this->addView('search');
-		$this->addView('seller', array('complete'), 'id');
+		$this->addView('seller', array('complete'), 'catid');
 		$this->addView('store', array(), 'id');
 		$this->addView('stores');
 		$this->addView('wishlist', array(), 'user_id');
-		$this->addView('reviews');
 
 		// Build viewMap only after all viewSegments have been initialised
 		$this->viewMap = array_flip($this->viewSegments->flatten('/'));
@@ -216,6 +218,7 @@ class SellaciousRouter extends JComponentRouterBase
 	 */
 	public function preprocess($query)
 	{
+		// Its important to not use default view else we'd fail on Itemid only URLs
 		$vName = isset($query['view']) ? $query['view'] : null;
 		$view  = $this->getView($vName);
 
@@ -260,16 +263,7 @@ class SellaciousRouter extends JComponentRouterBase
 			}
 		}
 
-		// Check if the active menuitem matches the requested language and this component
-		$active = $this->menu->getActive();
-
-		if ($active && $active->component === $this->component &&
-			($lang === '*' || in_array($active->language, array('*', $lang)) || !JLanguageMultilang::isEnabled()))
-		{
-			$query['Itemid'] = $active->id;
-
-			return $query;
-		}
+		// Not anymore: Check if the active menuitem matches the requested language and this component
 
 		// If not found, return language specific home link
 		$default = $this->menu->getDefault($lang);
@@ -303,7 +297,8 @@ class SellaciousRouter extends JComponentRouterBase
 		// If we do not have a component menu item of our own, we cannot have a custom sef route
 		if ($item->component != $this->component)
 		{
-			return array();
+			// @2018-12-08: v1.6.1 @ We allow routing for non-sellacious menu Itemid which use this router
+			// return array();
 		}
 
 		$view = $this->getView($query['view']);
@@ -334,13 +329,17 @@ class SellaciousRouter extends JComponentRouterBase
 
 		/**
 		 * Perform SEF route only if -
+		 * - Menu Item is non-sellacious menu
 		 * - Menu Item has not view [OR]
 		 * - Menu Item has default view that we don't see as a view at all, equivalent to not having a view [OR]
 		 * - The query has not view to be made as segment
 		 *
 		 * This is to prevent segments for view twice - menu item + query.
 		 */
-		if (!isset($item->query['view']) || $item->query['view'] == str_replace('com_', '', $this->component) || !isset($query['view']))
+		if ($item->component != $this->component ||
+		    !isset($item->query['view']) ||
+		    !isset($query['view']) ||
+		    $item->query['view'] == str_replace('com_', '', $this->component))
 		{
 			// Now build the segments for the specific view by calling the appropriate method if available
 			$method   = 'get' . ucfirst($view->name) . 'Segments';
@@ -374,7 +373,7 @@ class SellaciousRouter extends JComponentRouterBase
 
 		if (isset($vars['view']))
 		{
-			// We don't need to find the view, its set by menu.
+			// We don't need to find the view, its set by menu already.
 		}
 		elseif (array_key_exists($segments[0], $this->viewMap))
 		{
@@ -397,7 +396,7 @@ class SellaciousRouter extends JComponentRouterBase
 		else
 		{
 			// Special processing for the categories, products and product urls, they don't have a view segment.
-			$query = $this->parseCategoriesSegments($segments);
+			$query = $this->parseCategoriesSegments($segments, $vars);
 			$vars  = array_merge($vars, $query);
 
 			return $vars;
@@ -407,7 +406,7 @@ class SellaciousRouter extends JComponentRouterBase
 		if (count($segments))
 		{
 			$method = 'parse' . ucfirst($vars['view']) . 'Segments';
-			$query  = is_callable(array($this, $method)) ? call_user_func_array(array($this, $method), array(&$segments)) : array();
+			$query  = is_callable(array($this, $method)) ? call_user_func_array(array($this, $method), array(&$segments, $vars)) : array();
 
 			$vars = array_merge($vars, $query);
 		}
@@ -606,37 +605,120 @@ class SellaciousRouter extends JComponentRouterBase
 
 		$view = $this->getView('products');
 
-		if (isset($query[$view->key]))
+		// It's important to quit here because Joomla may already have found a matching menu item
+		if (!isset($query[$view->key]))
 		{
-			if ($query[$view->key] == 1)
+			return array();
+		}
+
+		try
+		{
+			$lang  = isset($query['lang']) ? $query['lang'] : '*';
+			$catid = (int) $query[$view->key];
+
+			$sql = $this->db->getQuery(true);
+			$sql->select('b.id, b.alias')
+				->from($this->db->qn('#__sellacious_categories', 'a'))
+				->join('LEFT', $this->db->qn('#__sellacious_categories' , 'b') . ' ON b.lft <= a.lft AND b.rgt >= a.rgt')
+				->where('a.id = ' . $catid)
+				->order('b.lft ' . 'DESC');
+
+			$categories = $this->db->setQuery($sql)->loadObjectList();
+			$links      = array();
+
+			// First attempt to use 'products' view route only
+			foreach ($categories as $category)
+			{
+				$links[] = array(
+					'url'   => 'index.php?option=' . $this->component . '&view=products&' . $view->key . '=' . $category->id,
+					'alias' => $category->alias,
+					'catid' => $category->id,
+				);
+			}
+
+			$links[] = array(
+				'url'   => 'index.php?option=' . $this->component . '&view=products',
+				'alias' => 'root',
+				'catid' => 1,
+			);
+
+			foreach ($links as $link)
+			{
+				$keys = array('component_id' => $this->componentId, 'link' => $link['url'], 'language' => array($lang, '*'));
+				$item = $this->menu->getItems(array_keys($keys), array_values($keys), true);
+
+				if (is_object($item))
+				{
+					// We have a menu for this view, lets use it
+					$query['Itemid'] = $item->id;
+
+					unset($query['view']);
+					unset($query[$view->key]);
+
+					return $segments;
+				}
+
+				if ($link['catid'] > 1)
+				{
+					array_unshift($segments, $link['alias']);
+				}
+			}
+
+			// Reset segments, we will attempt category menus before giving up
+			$segments = array();
+			$links    = array();
+
+			foreach ($categories as $category)
+			{
+				$links[] = array(
+					'url'   => 'index.php?option=' . $this->component . '&view=categories&' . $view->key . '=' . $category->id,
+					'alias' => $category->alias,
+					'catid' => $category->id,
+				);
+			}
+
+			$links[] = array(
+				'url'   => 'index.php?option=' . $this->component . '&view=categories',
+				'alias' => 'root',
+				'catid' => 1,
+			);
+
+			foreach ($links as $link)
+			{
+				$keys = array('component_id' => $this->componentId, 'link' => $link['url'], 'language' => array($lang, '*'));
+				$item = $this->menu->getItems(array_keys($keys), array_values($keys), true);
+
+				if (is_object($item))
+				{
+					// We have a menu for this view, lets use it
+					$query['Itemid'] = $item->id;
+
+					unset($query['view']);
+					unset($query[$view->key]);
+
+					$segments[] = 'products';
+
+					return $segments;
+				}
+
+				if ($link['catid'] > 1)
+				{
+					array_unshift($segments, $link['alias']);
+				}
+			}
+
+			if (count($segments) || $query[$view->key] = 1)
 			{
 				unset($query[$view->key]);
 			}
-			else
-			{
-				try
-				{
-					$sql = $this->db->getQuery(true);
 
-					$sql->select('a.path')
-						->from($this->db->qn('#__sellacious_categories', 'a'))
-						->where('a.id = ' . (int) $query[$view->key]);
+			$segments[] = 'products';
 
-					$path = $this->db->setQuery($sql)->loadResult();
-
-					if ($path)
-					{
-						$segments = explode('/', $path);
-
-						// unset($query['view']);
-						unset($query[$view->key]);
-					}
-				}
-				catch (Exception $e)
-				{
-					// Ignore, the query parameter remains and no segments are added
-				}
-			}
+			unset($query['view']);
+		}
+		catch (Exception $e)
+		{
+			// Ignore, the query parameter remains and no segments are added
 		}
 
 		return $segments;
@@ -679,6 +761,68 @@ class SellaciousRouter extends JComponentRouterBase
 	 *
 	 * @since   1.5.0
 	 */
+	protected function getReviewsSegments(&$query)
+	{
+		$segments = array();
+
+		if (isset($query['product_id']))
+		{
+			$tQuery         = array();
+			$tQuery['view'] = 'categories';
+			$tQuery['p']    = $this->helper->product->getCode($query['product_id'], 0, 0);
+			$tQuery['lang'] = isset($query['lang']) ? $query['lang'] : null;
+
+			$segments = $this->getProductSegments($tQuery);
+
+			if (isset($tQuery['Itemid']))
+			{
+				$query['Itemid'] = $tQuery['Itemid'];
+			}
+
+			if ($segments)
+			{
+				$segments[] = 'reviews';
+
+				unset($query['view']);
+				unset($query['product_id']);
+			}
+
+		}
+		elseif (isset($query['seller_uid']))
+		{
+			$tQuery         = array();
+			$tQuery['view'] = 'store';
+			$tQuery['id']   = $query['seller_uid'];
+			$tQuery['lang'] = isset($query['lang']) ? $query['lang'] : null;
+
+			$segments = $this->getStoreSegments($tQuery);
+
+			if (isset($tQuery['Itemid']))
+			{
+				$query['Itemid'] = $tQuery['Itemid'];
+			}
+
+			if ($segments)
+			{
+				$segments[] = 'reviews';
+
+				unset($query['view']);
+				unset($query['seller_uid']);
+			}
+		}
+
+		return $segments;
+	}
+
+	/**
+	 * Get the sef route segments for the given query URL
+	 *
+	 * @param   array  $query  The URL query parameters
+	 *
+	 * @return  array
+	 *
+	 * @since   1.5.0
+	 */
 	protected function getSearchSegments(&$query)
 	{
 		return (array) $this->getViewSegment($query);
@@ -697,40 +841,7 @@ class SellaciousRouter extends JComponentRouterBase
 	{
 		$segments = (array) $this->getViewSegment($query);
 
-		$found = false;
-		$view  = $this->getView('seller');
-
-		if (isset($query[$view->key]))
-		{
-			try
-			{
-				$sql = $this->db->getQuery(true);
-
-				$sql->select('s.code')->from($this->db->qn('#__sellacious_sellers', 's'))->where('s.user_id = ' . (int) $query[$view->key]);
-
-				$value = $this->db->setQuery($sql)->loadResult();
-
-				if ($value)
-				{
-					$found      = true;
-					$segments[] = urlencode($value);
-
-					unset($query[$view->key]);
-				}
-			}
-			catch (Exception $e)
-			{
-				// Ignore, the query parameter remains and no segments are added
-			}
-		}
-
-		// Process layout parameter only if an order number was found
-		if ($found && isset($query['layout']))
-		{
-			$segments[] = $query['layout'];
-
-			unset($query['layout']);
-		}
+		// We currently skip catid mapping to alias segments
 
 		return $segments;
 	}
@@ -785,6 +896,20 @@ class SellaciousRouter extends JComponentRouterBase
 	 *
 	 * @since   1.5.0
 	 */
+	protected function getStoresSegments(&$query)
+	{
+		return (array) $this->getViewSegment($query);
+	}
+
+	/**
+	 * Get the sef route segments for the given query URL
+	 *
+	 * @param   array  $query  The URL query parameters
+	 *
+	 * @return  array
+	 *
+	 * @since   1.5.0
+	 */
 	protected function getWishlistSegments(&$query)
 	{
 		return (array) $this->getViewSegment($query);
@@ -801,74 +926,90 @@ class SellaciousRouter extends JComponentRouterBase
 	 */
 	protected function getCategoriesSegments(&$query)
 	{
-		$segments = array();
-
 		$view = $this->getView('categories');
 
-		if (isset($query[$view->key]))
+		// Convert parent_id usage to category_id, but only if category_id is not empty or redundant
+		if (!isset($query[$view->key]) && isset($query['parent_id']))
 		{
-			if ($query[$view->key] == 1)
+			$query[$view->key] = $query['parent_id'];
+
+			unset($query['parent_id']);
+		}
+
+		// It's important to quit here because Joomla may already have found a matching menu item
+		if (!isset($query[$view->key]))
+		{
+			return array();
+		}
+
+		$segments = array();
+
+		try
+		{
+			$lang  = isset($query['lang']) ? $query['lang'] : '*';
+			$catid = (int) $query[$view->key];
+
+			$sql = $this->db->getQuery(true);
+			$sql->select('b.id, b.alias')
+			    ->from($this->db->qn('#__sellacious_categories', 'a'))
+			    ->join('LEFT', $this->db->qn('#__sellacious_categories', 'b') . ' ON b.lft <= a.lft AND b.rgt >= a.rgt')
+			    ->where('a.id = ' . $catid)
+			    ->order('b.lft ' . 'DESC');
+
+			$categories = $this->db->setQuery($sql)->loadObjectList();
+
+			$links = array();
+
+			foreach ($categories as $category)
 			{
-				unset($query[$view->key]);
+				// Recognise both 'category_id' and 'parent_id' keys in the menu
+				$links[] = array(
+					'urls'   => array(
+						'index.php?option=' . $this->component . '&view=categories&' . $view->key . '=' . $category->id,
+						'index.php?option=' . $this->component . '&view=categories&parent_id=' . $category->id
+					),
+					'alias' => $category->alias,
+					'catid' => $category->id,
+				);
 			}
-			else
+
+			foreach ($links as $link)
 			{
-				try
+				foreach ($link['urls'] as $idx => $url)
 				{
-					$sql = $this->db->getQuery(true);
+					$keys = array('component_id' => $this->componentId, 'link' => $url, 'language' => array($lang, '*'));
+					$item = $this->menu->getItems(array_keys($keys), array_values($keys), true);
 
-					$sql->select('a.path')
-						->from($this->db->qn('#__sellacious_categories', 'a'))
-						->where('a.id = ' . (int) $query[$view->key]);
-
-					$path = $this->db->setQuery($sql)->loadResult();
-
-					if ($path)
+					if (is_object($item))
 					{
-						$segments = explode('/', $path);
+						// We have menu for this view, lets use it
+						$query['Itemid'] = $item->id;
 
 						unset($query['view']);
 						unset($query[$view->key]);
+
+						return $segments;
 					}
 				}
-				catch (Exception $e)
+
+				if ($link['catid'] > 1)
 				{
-					// Ignore, the query parameter remains and no segments are added
+					array_unshift($segments, $link['alias']);
 				}
+			}
+
+			// If we do not have a menu item it would be just of our segments
+			unset($query['view']);
+			unset($query[$view->key]);
+
+			if (count($segments) == 0)
+			{
+				$segments[] = 'categories';
 			}
 		}
-		// B/C
-		elseif (isset($query['parent_id']))
+		catch (Exception $e)
 		{
-			if ($query['parent_id'] == 1)
-			{
-				unset($query['parent_id']);
-			}
-			else
-			{
-				try
-				{
-					$sql = $this->db->getQuery(true);
-
-					$sql->select('a.path')
-						->from($this->db->qn('#__sellacious_categories', 'a'))
-						->where('a.id = ' . (int) $query['parent_id']);
-
-					$path = $this->db->setQuery($sql)->loadResult();
-
-					if ($path)
-					{
-						$segments = explode('/', $path);
-
-						unset($query['view']);
-						unset($query['parent_id']);
-					}
-				}
-				catch (Exception $e)
-				{
-					// Ignore, the query parameter remains and no segments are added
-				}
-			}
+			// Ignore, the query parameter remains and no segments are added
 		}
 
 		return $segments;
@@ -885,79 +1026,114 @@ class SellaciousRouter extends JComponentRouterBase
 	 */
 	protected function getProductSegments(&$query)
 	{
-		$segments = array();
-
 		$view  = $this->getView('product');
-		$found = false;
 
-		if (isset($query[$view->key]))
+		if (!isset($query[$view->key]))
 		{
-			if ($this->helper->product->parseCode($query[$view->key], $productId, $variantId, $sellerUid))
+			return array();
+		}
+
+		$lang = isset($query['lang']) ? $query['lang'] : '*';
+
+		// If the code is not parse'able, leave it as query parameter only
+		$parsed = $this->helper->product->parseCode($query[$view->key], $productId, $variantId, $sellerUid);
+
+		if (!$parsed || !$productId)
+		{
+			return array();
+		}
+
+		$searchCat = $this->helper->config->get('category_sef_prefix');
+		$segments  = array();
+
+		if ($searchCat)
+		{
+			try
 			{
-				$sql = $this->db->getQuery(true);
+				$categories = $this->helper->product->getCategories($productId);
+				$catid      = reset($categories);
 
-				$searchParent = $this->helper->config->get('category_sef_prefix');
-
-				if ($searchParent)
+				if ($catid)
 				{
-					$sql->select('a.path')
-						->from($this->db->qn('#__sellacious_categories', 'a'))
-						->order('a.lft ASC');
+					$tQuery                = array();
+					$tQuery['view']        = 'categories';
+					$tQuery['category_id'] = $catid;
+					$tQuery['lang']        = $lang;
 
-					$sql->join('inner', $this->db->qn('#__sellacious_product_categories', 'pc') . ' ON pc.category_id = a.id')
-						->where('pc.product_id = ' . (int) $productId);
+					$segments = $this->getCategoriesSegments($tQuery);
 
-					$path = $this->db->setQuery($sql)->loadResult();
-
-					$segments = explode('/', $path);
-				}
-
-				try
-				{
-					if ($variantId && $this->helper->config->get('multi_variant'))
+					if ($segments && $segments[0] == 'categories')
 					{
-						$sql->clear()->select('a.alias')
-							->from($this->db->qn('#__sellacious_variants', 'a'))
-							->where('a.id = ' . (int) $variantId)
-							->where('a.product_id = ' . (int) $productId);
-
-						$value = $this->db->setQuery($sql)->loadResult();
-
-						if ($value)
-						{
-							$found      = true;
-							$segments[] = urlencode($value);
-
-							unset($query['view'], $query[$view->key]);
-						}
+						array_pop($segments);
 					}
 
-					if (!$found)
+					if (isset($tQuery['Itemid']))
 					{
-						$sql->clear()->select('a.alias')
-							->from($this->db->qn('#__sellacious_products', 'a'))
-							->where('a.id = ' . (int) $productId);
-
-						$value = $this->db->setQuery($sql)->loadResult();
-
-						if ($value)
-						{
-							$found      = true;
-							$segments[] = urlencode($value);
-
-							unset($query['view'], $query[$view->key]);
-						}
-					}
-
-					if ($found && $sellerUid && $this->helper->config->get('multi_seller'))
-					{
-						$query['s'] = $sellerUid;
+						$query['Itemid'] = $tQuery['Itemid'];
 					}
 				}
-				catch (Exception $e)
-				{
-					// Optional, display only segments will not be added on exception, URL still works
-				}
+			}
+			catch (Exception $e)
+			{
+				return $segments;
+			}
+		}
+		else
+		{
+			$url  = 'index.php?option=' . $this->component . '&view=product';
+			$keys = array('component_id' => $this->componentId, 'link' => $url, 'language' => array($lang, '*'));
+			$item = $this->menu->getItems(array_keys($keys), array_values($keys), true);
+
+			if (is_object($item))
+			{
+				// We have menu for this view, lets use it
+				$query['Itemid'] = $item->id;
+
+				unset($query['view']);
+			}
+		}
+
+		// Append product segment
+		$sql = $this->db->getQuery(true);
+
+		$sql->clear()->select('a.alias')
+		    ->from($this->db->qn('#__sellacious_products', 'a'))
+		    ->where('a.id = ' . (int) $productId);
+
+		$pAlias = $this->db->setQuery($sql)->loadResult();
+
+		if ($variantId && $this->helper->config->get('multi_variant'))
+		{
+			$sql = $this->db->getQuery(true);
+
+			$sql->clear()->select('a.alias')
+			    ->from($this->db->qn('#__sellacious_variants', 'a'))
+			    ->where('a.id = ' . (int) $variantId)
+			    ->where('a.product_id = ' . (int) $productId);
+
+			$vAlias = $this->db->setQuery($sql)->loadResult();
+		}
+		else
+		{
+			$vAlias = false;
+		}
+
+		// We could find product and -> we found variant too or we do not need variant at all
+		if ($pAlias && ($vAlias === false || strlen($vAlias)))
+		{
+			$segments[] = urlencode($pAlias);
+
+			if ($vAlias)
+			{
+				$segments[] = urlencode($vAlias);
+			}
+
+			unset($query['view']);
+			unset($query[$view->key]);
+
+			if ($sellerUid && $this->helper->config->get('multi_seller'))
+			{
+				$query['s'] = $sellerUid;
 			}
 		}
 
@@ -1168,25 +1344,44 @@ class SellaciousRouter extends JComponentRouterBase
 	 *
 	 * @since   1.5.0
 	 */
-	protected function parseProductSegments(&$segments)
+	protected function parseStoresSegments(&$segments)
 	{
-		return $this->parseCategoriesSegments($segments);
+		return array();
 	}
 
 	/**
 	 * Parse the sef route segments for the given query URL
 	 *
 	 * @param   array  $segments  The SEF route segments
+	 * @param   array  $vars      The active menu query
 	 *
 	 * @return  array
 	 *
 	 * @since   1.5.0
 	 */
-	protected function parseProductsSegments(&$segments)
+	protected function parseProductSegments(&$segments, $vars = array())
 	{
-		$vars = $this->parseCategoriesSegments($segments);
+		return $this->parseCategoriesSegments($segments, $vars);
+	}
 
-		$vars['view'] = 'products';
+	/**
+	 * Parse the sef route segments for the given query URL
+	 *
+	 * @param   array  $segments  The SEF route segments
+	 * @param   array  $vars      The active menu query
+	 *
+	 * @return  array
+	 *
+	 * @since   1.5.0
+	 */
+	protected function parseProductsSegments(&$segments, $vars = array())
+	{
+		$vars = $this->parseCategoriesSegments($segments, $vars);
+
+		if ($vars['view'] == 'categories')
+		{
+			$vars['view'] = 'products';
+		}
 
 		return $vars;
 	}
@@ -1195,12 +1390,13 @@ class SellaciousRouter extends JComponentRouterBase
 	 * Parse the sef route segments for the given query URL
 	 *
 	 * @param   array  $segments  The SEF route segments
+	 * @param   array  $oVars     The already evaluated variables
 	 *
 	 * @return  array
 	 *
 	 * @since   1.5.0
 	 */
-	protected function parseCategoriesSegments(&$segments)
+	protected function parseCategoriesSegments(&$segments, $oVars = array())
 	{
 		$vars  = array();
 		$catid = null;
@@ -1208,8 +1404,27 @@ class SellaciousRouter extends JComponentRouterBase
 		// Match segments to find category id
 		if (count($segments))
 		{
-			$parts = array();
-			$paths = array();
+			$parts  = array();
+			$paths  = array();
+			$prefix = null;
+
+			// Prepend alias with menu assigned segment's alias
+			if (isset($oVars['parent_id']) && !isset($oVars['category_id']))
+			{
+				$oVars['category_id'] = $oVars['parent_id'];
+			}
+
+			if (isset($oVars['category_id']) && $oVars['category_id'] > 1)
+			{
+				$cAlias = array('list.select' => 'a.level, a.path', 'id' => $oVars['category_id']);
+				$prefix = $this->helper->category->loadObject($cAlias);
+
+				if ($prefix)
+				{
+					$parts   = explode('/', $prefix->path);
+					$paths[] = $prefix->path;
+				}
+			}
 
 			foreach ($segments as $segment)
 			{
@@ -1230,7 +1445,7 @@ class SellaciousRouter extends JComponentRouterBase
 				if ($category)
 				{
 					$catid    = $category->id;
-					$segments = array_slice($segments, $category->level);
+					$segments = array_slice($parts, $category->level);
 				}
 			}
 			catch (Exception $e)
@@ -1243,24 +1458,43 @@ class SellaciousRouter extends JComponentRouterBase
 		{
 			$view = $this->getView('categories');
 
-			$vars['view']     = 'categories';
-			$vars[$view->key] = $catid ?: 1;
+			$vars['view']  = 'categories';
+
+			if ($catid)
+			{
+				$vars[$view->key] = $catid;
+			}
+
+			return $vars;
+		}
+		elseif ($segments[0] == 'products')
+		{
+			$view = $this->getView('products');
+
+			$vars['view'] = 'products';
+
+			if ($catid)
+			{
+				$vars[$view->key] = $catid;
+			}
 
 			return $vars;
 		}
 
 		// Find a product/variant
-		$variantId    = 0;
-		$searchParent = $this->helper->config->get('category_sef_prefix');
+		$searchCat = $this->helper->config->get('category_sef_prefix');
 
-		if ($searchParent && !$catid)
+		// If we need parents and we do not have any, let's get out of here
+		if ($searchCat && !$catid)
 		{
-			return $vars;
+			// We'd not query as of now until we're sure its impossible to lookup at this stage
+			// return $vars;
 		}
 
 		try
 		{
 			$sql = $this->db->getQuery(true);
+
 			$sql->select('a.id')
 				->from($this->db->qn('#__sellacious_products', 'a'))
 				->where('a.alias = ' . $this->db->q($segments[0]));
@@ -1273,20 +1507,49 @@ class SellaciousRouter extends JComponentRouterBase
 			}
 
 			$productId = $this->db->setQuery($sql)->loadResult();
+
+			if (!$productId)
+			{
+				throw new RouteNotFoundException('The selected product or category does not exist: ' . $segments[0]);
+			}
+
+			array_shift($segments);
+		}
+		catch (RouteNotFoundException $e)
+		{
+			throw $e;
 		}
 		catch (Exception $e)
 		{
+			JLog::add($e->getMessage(), JLog::ERROR, 'jroute');
+
+			throw new RouteNotFoundException('Unable to find a matching product or category.' . $e->getMessage());
+		}
+
+		$variantId = 0;
+
+		// Detect if this is a reviews view
+		if (count($segments) && $segments[0] == 'reviews')
+		{
+			$vars['view']        = 'reviews';
+			$vars['product_id']  = $productId;
+			$vars['layout']      = null;
+			$vars['category_id'] = null;
+			$vars['parent_id']   = null;
+
 			return $vars;
 		}
 
-		if (!$productId && $this->helper->config->get('multi_variant'))
+		// Product found. Now we have a variant segment, and shop is multi-variant
+		if (count($segments) != 0 && $this->helper->config->get('multi_variant'))
 		{
 			try
 			{
 				$sql = $this->db->getQuery(true);
-				$sql->select('a.id, a.product_id')
-					->from($this->db->qn('#__sellacious_variants', 'a'))
-					->where('a.alias = ' . $this->db->q($segments[0]));
+				$sql->select('a.id')
+				    ->from($this->db->qn('#__sellacious_variants', 'a'))
+				    ->where('a.alias = ' . $this->db->q($segments[0]))
+				    ->where('a.product_id = ' . (int) $productId);
 
 				if ($catid)
 				{
@@ -1295,37 +1558,37 @@ class SellaciousRouter extends JComponentRouterBase
 					$sql->join('inner', $this->db->qn('#__sellacious_product_categories', 'pc') . ' ON ' . $condition);
 				}
 
-				$obj = $this->db->setQuery($sql)->loadObject();
+				$variantId = $this->db->setQuery($sql)->loadResult();
 
-				if ($obj)
+				if (!$variantId)
 				{
-					$productId = $obj->product_id;
-					$variantId = $obj->id;
+					JFactory::getApplication()->enqueueMessage('The selected variant does not exist for this product.');
 				}
+
+				array_shift($segments);
 			}
 			catch (Exception $e)
 			{
-				return $vars;
+				JLog::add($e->getMessage(), JLog::ERROR, 'jroute');
+
+				throw new RouteNotFoundException('Unable to find a matching product or category.');
 			}
 		}
 
-		if ($productId)
+		// Input read will work with real request only, wont work with test route sometimes as $query is not known here
+		$sellerUid = $this->app->input->getInt('s');
+		$view      = $this->getView('product');
+
+		$vars['view']     = 'product';
+		$vars[$view->key] = $this->helper->product->getCode($productId, $variantId, $sellerUid);
+
+		if (isset($oVars['layout']) && !in_array($oVars['layout'], $view->layouts))
 		{
-			array_shift($segments);
-
-			try
-			{
-				$view      = $this->getView('product');
-				$sellerUid = $this->app->input->getInt('s');
-
-				$vars['view']     = 'product';
-				$vars[$view->key] = $this->helper->product->getCode($productId, $variantId, $sellerUid);
-			}
-			catch (Exception $e)
-			{
-				return $vars;
-			}
+			$vars['layout'] = reset($view->layouts);
 		}
+
+		$vars['category_id'] = null;
+		$vars['parent_id']   = null;
 
 		return $vars;
 	}

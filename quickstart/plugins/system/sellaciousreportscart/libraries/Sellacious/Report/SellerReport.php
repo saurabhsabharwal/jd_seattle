@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -93,10 +93,12 @@ class SellerReport extends ReportHandler
 
 		//Subquery for commission
 		$commSubQuery = $db->getQuery(true);
-		$commSubQuery->select('SUM(g.balance) ');
+		$commSubQuery->select('SUM(g.amount) ');
 		$commSubQuery->from($db->quoteName('#__sellacious_transactions', 'g'));
 		$commSubQuery->where('g.reason = ' . $db->quote('order.item.sales_commission'));
+		$commSubQuery->where('g.crdr = ' . $db->q('dr'));
 		$commSubQuery->where('FIND_IN_SET(g.order_id, GROUP_CONCAT(DISTINCT a.id))');
+		$commSubQuery->where('g.user_id = c.user_id');
 
 		//subquery for completed orders
 		$completedSubQuery = $db->getQuery(true);

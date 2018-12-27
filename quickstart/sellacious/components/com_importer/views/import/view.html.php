@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -48,14 +48,12 @@ class ImporterViewImport extends SellaciousView
 	 */
 	public function display($tpl = null)
 	{
-		$app = JFactory::getApplication();
-
 		$this->state    = $this->get('State');
 		$this->handlers = $this->get('Handlers');
 
 		if (count($this->handlers) == 0)
 		{
-			$app->enqueueMessage(JText::_('COM_IMPORTER_PREMIUM_FEATURE_NOTICE_IMPORTER'), 'premium');
+			$this->app->enqueueMessage(JText::_('COM_IMPORTER_PREMIUM_FEATURE_NOTICE_IMPORTER'), 'premium');
 
 			$this->setLayout('purchase');
 		}

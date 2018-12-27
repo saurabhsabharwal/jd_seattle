@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -11,6 +11,7 @@
 defined('_JEXEC') or die;
 
 use Joomla\Utilities\ArrayHelper;
+use Sellacious\Cache\CacheHelper;
 
 /**
  * Products list controller class.
@@ -558,19 +559,48 @@ class SellaciousControllerProducts extends SellaciousControllerAdmin
 
 		try
 		{
-			$pCache = new Sellacious\Cache\Products;
-			$rCache = new Sellacious\Cache\Prices;
-			$sCache = new Sellacious\Cache\Specifications;
+			// If we are allowed to use exec for cli, we'd use it
+			$disabled = array_map('trim', explode(',', ini_get('disable_functions')));
+			$useExec  = is_callable('exec') && !in_array('exec', $disabled) && strtolower(ini_get('safe_mode')) != 1;
 
-			$pCache->build();
-			$rCache->build();
-			$sCache->build();
+			if ($useExec)
+			{
+				$now     = JFactory::getDate();
+				$ts      = $now->toSql();
+				$config  = JFactory::getConfig();
+				$userId  = (int) JFactory::getUser()->id;
+				$logfile = $config->get('tmp_path') . '/s-cache-' . $ts . '.log';
+				$history = $config->get('tmp_path') . '/s-cache.log';
 
-			// Sync media as well
-			$this->helper->media->purgeMissing();
-			$this->helper->media->syncFromFilesystem();
+				$pid = CacheHelper::executeCli($logfile, $userId);
 
-			$this->setMessage(JText::_('COM_SELLACIOUS_PRODUCTS_CACHE_REBUILD_SUCCESS'));
+				if ($pid)
+				{
+					$this->app->setUserState('com_sellacious.cache.state.pid', $pid);
+
+					$entry = array('TS' => $ts, 'PID' => $pid, 'LOG' => basename($logfile));
+
+					file_put_contents($history, json_encode($entry) . PHP_EOL, FILE_APPEND);
+
+					$this->setMessage(JText::_('COM_SELLACIOUS_PRODUCTS_CACHE_STARTED'));
+
+					return true;
+				}
+				else
+				{
+					$this->setMessage(JText::_('COM_SELLACIOUS_PRODUCTS_CACHE_START_FAILED'));
+
+					return false;
+				}
+			}
+			else
+			{
+				CacheHelper::buildCache();
+
+				$this->setMessage(JText::_('COM_SELLACIOUS_PRODUCTS_CACHE_REBUILD_SUCCESS'));
+
+				return true;
+			}
 		}
 		catch (Exception $e)
 		{
@@ -578,8 +608,6 @@ class SellaciousControllerProducts extends SellaciousControllerAdmin
 
 			return false;
 		}
-
-		return true;
 	}
 
 	/**

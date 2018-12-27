@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -186,6 +186,7 @@ class pkg_sellaciousInstallerScript
 			'modules/mod_sellacious_specialcatsproducts/assets/js/owl.carousel.js',
 			'media/mod_sellacious_specialcatsproducts/css/style.css',
 			'modules/mod_sellacious_specialcatsproducts/mod_sellacious_specialcatsproducts.xml',
+			'administrator/components/com_sellacious/sql/updates/mysqli/1.6.1.sql',
 			'media/mod_usercurrency/js/jquery.jqtransform.js',
 			'media/mod_usercurrency/img/select_left.gif',
 			'media/mod_usercurrency/img/select_right.gif',

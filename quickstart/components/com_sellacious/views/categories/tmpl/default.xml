@@ -5,7 +5,7 @@
 	</layout>
 	<fields name="request">
 		<fieldset name="request" addfieldpath="components/com_sellacious/models/fields">
-			<field name="parent_id"
+			<field name="category_id"
 			       type="categoryList"
 			       label="COM_SELLACIOUS_SYS_PRODUCTS_VIEW_DEFAULT_PARAM_FILTER_CATEGORY_TITLE"
 			       group="product/physical;product/electronic"

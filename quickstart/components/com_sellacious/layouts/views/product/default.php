@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -115,7 +115,7 @@ $reviewsUrl = JRoute::_('index.php?option=com_sellacious&view=reviews&product_id
 						foreach ($item->get('special_listings') as $spl_cat):
 							$badges = $this->helper->media->getImages('splcategories.badge', (int) $spl_cat->catid, false);
 							if (count($badges)): ?>
-								<img src="<?php echo reset($badges) ?>" class="spl-badge"/><?php
+								<img src="<?php echo reset($badges) ?>" alt="Badge" class="spl-badge"/><?php
 							endif;
 						endforeach; ?>
 					</div>
@@ -144,7 +144,7 @@ $reviewsUrl = JRoute::_('index.php?option=com_sellacious&view=reviews&product_id
 			<!-- END: seller/admin can directly jump to backend for edit -->
 			<div class="clearfix"></div>
 
-			<?php if ($manufacturer->id): ?>
+			<?php if (isset($manufacturer->id)): ?>
 				<div class="manufacturer-name">
 					<a href="<?php echo $urlM ?>" class="hasTooltip" title="Manufacturer"><?php echo $manufacturer->title; ?></a>
 				</div>

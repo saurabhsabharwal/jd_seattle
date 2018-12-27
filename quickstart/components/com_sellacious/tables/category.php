@@ -1,6 +1,6 @@
 <?php
 /**
- * @version     1.6.0
+ * @version     1.6.1
  * @package     sellacious
  *
  * @copyright   Copyright (C) 2012-2018 Bhartiy Web Technologies. All rights reserved.
@@ -10,17 +10,24 @@
 // no direct access
 defined('_JEXEC') or die;
 
+use Joomla\String\StringHelper;
 use Joomla\Utilities\ArrayHelper;
 
 /**
  * Category Table class
+ *
+ * @since   1.0.0
  */
 class SellaciousTableCategory extends SellaciousTableNested
 {
+	protected $_incrementAlias = true;
+
 	/**
 	 * Constructor
 	 *
 	 * @param  JDatabaseDriver  $db  A database connector object
+	 *
+	 * @since   1.0.0
 	 */
 	public function __construct(&$db)
 	{
@@ -36,6 +43,43 @@ class SellaciousTableCategory extends SellaciousTableNested
 	}
 
 	/**
+	 * Asset that the nested set data is valid.
+	 *
+	 * @return  boolean  True if the instance is sane and able to be stored in the database.
+	 *
+	 * @link    http://docs.joomla.org/JTable/check
+	 * @since   11.1
+	 *
+	 * @throws  Exception
+	 * @throws  RuntimeException on database error.
+	 * @throws  UnexpectedValueException
+	 */
+	public function check()
+	{
+		$value = parent::check();
+
+		// Its important to check alias after parent::check as alias is modified there
+		if ($value && ($this->alias == 'products' || $this->alias == 'categories'))
+		{
+			throw new RuntimeException(JText::sprintf('COM_SELLACIOUS_CATEGORY_ALIAS_RESTRICTED', $this->alias));
+		}
+
+		while (!$this->isUnique())
+		{
+			if ($this->_incrementAlias)
+			{
+				$this->alias = StringHelper::increment($this->alias, 'dash');
+			}
+			else
+			{
+				throw new Exception(JText::sprintf('COM_SELLACIOUS_PRODUCT_UNIQUE_ALIAS_ERROR', $this->alias));
+			}
+		}
+
+		return $value;
+	}
+
+	/**
 	 * Override to make sure to obey following -
 	 * Default item cannot be unpublished
 	 * Parent of default cannot be unpublished
@@ -45,7 +89,10 @@ class SellaciousTableCategory extends SellaciousTableNested
 	 * @param   int    $userId
 	 *
 	 * @return  bool
+	 *
 	 * @throws  Exception
+	 *
+	 * @since   1.0.0
 	 */
 	public function publish($pks = null, $state = 1, $userId = 0)
 	{
@@ -76,36 +123,46 @@ class SellaciousTableCategory extends SellaciousTableNested
 	/**
 	 * Returns an array of conditions to meet for the uniqueness of the row, of course other than the primary key
 	 *
-	 * @return  array  key-value pairs to check the table row uniqueness against the row being checked
+	 * @return  array  Key-value pairs to check the table row uniqueness against the row being checked
+	 *
+	 * @since   1.0.0
 	 */
 	protected function getUniqueConditions()
 	{
-		$conditions   = array(
-			'alias' => array(
-				'alias'     => $this->get('alias'),
-				'parent_id' => $this->parent_id,
-				'type'      => $this->get('type'),
-			)
-		);
-
-		return $conditions;
+		return array();
 	}
 
 	/**
 	 * Get Custom error message for each uniqueness error
 	 *
-	 * @param   array  $uk_index  Array index/identifier of unique keys returned by getUniqueConditions
-	 * @param   JTable $table     Table object with which conflicted
+	 * @param   array   $uk_index  Array index/identifier of unique keys returned by getUniqueConditions
+	 * @param   JTable  $table     Table object with which conflicted
 	 *
-	 * @return bool|string
+	 * @return  bool|string
+	 *
+	 * @since   1.0.0
 	 */
 	protected function getUniqueError($uk_index, JTable $table)
 	{
-		if ($uk_index === 'alias')
-		{
-			return JText::sprintf('COM_SELLACIOUS_TABLE_UNIQUE_KEYS', $this->getName());
-		}
-
 		return false;
+	}
+
+	protected function isUnique()
+	{
+		$filterP = array('list.select' => 'a.id', 'alias' => $this->alias);
+		$filterC = array(
+			'list.select' => 'a.id',
+			'alias'       => $this->alias,
+			'parent_id'   => $this->parent_id,
+			'type'        => $this->get('type'),
+			'list.where'  => 'a.id != ' . (int) $this->get('id'),
+		);
+
+		// If the alias we have, is existing for any product or category under same parent or any variant let's increment it
+		$dupe = $this->helper->category->loadResult($filterC)
+			 || $this->helper->product->loadResult($filterP)
+		     || $this->helper->variant->loadResult($filterP);
+
+		return $dupe === false;
 	}
 }

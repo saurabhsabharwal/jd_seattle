@@ -7,11 +7,9 @@ jQuery(document).ready(function ($) {
 		var by = $(element).find('input[type="radio"]:checked').val();
 
 		if (by == 1) {
-			$('#jform_plg_system_sellacioushyperlocal_store_radius_m').closest('div.input-row').show();
 			$('#jform_plg_system_sellacioushyperlocal_product_radius_m').closest('div.input-row').show();
 			$('.shippable_location_note').closest('div.row').hide();
 		} else {
-			$('#jform_plg_system_sellacioushyperlocal_store_radius_m').closest('div.input-row').hide();
 			$('#jform_plg_system_sellacioushyperlocal_product_radius_m').closest('div.input-row').hide();
 			$('.shippable_location_note').closest('div.row').show();
 		}
