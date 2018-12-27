@@ -315,6 +315,11 @@ div.modal .modal-body iframe {
 #modal-cart .modal-footer {
 	display: none;
 }
+[id^="sell-modal-"].modal .modal-body,
+[id*=" sell-modal-"].modal .modal-body {
+	max-height: 450px !important;
+}
+
 button.btn-review,
 button.btn-wishlist,
 button.btn-compare {
