@@ -905,7 +905,7 @@ button.btn-wishlist .fa-heart {
 
 @media only screen and (min-width: 992px) {
 	.view-profile .profile fieldset .control-group {
-		margin-bottom: 15px;
+		margin-bottom: 25px;
 		width: 50%;
 		float: left;
 	}
@@ -913,4 +913,8 @@ button.btn-wishlist .fa-heart {
 
 .view-profile .profile .btn-group {
 	margin-left: 5px;
+}
+
+.view-profile .profile .control-label label {
+	margin-bottom: 0;
 }
