@@ -234,7 +234,7 @@ JText::script('COM_SELLACIOUS');
 		<?php endif; ?>
 
 		<hr class="isolate"/>
-		<?php echo $this->loadTemplate('toolbar'); ?>
+		<?php //echo $this->loadTemplate('toolbar'); ?>
 
 		<div class="clearfix"></div>
 
