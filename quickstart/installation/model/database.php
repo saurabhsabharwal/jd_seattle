@@ -705,7 +705,7 @@ class InstallationModelDatabase extends JModelBase
 		// Attempt to refresh manifest caches.
 		$query->clear()
 			->select('*')
-			->from('#__extensions');
+			->from('#__extensions')->where('client_id != 2');
 		$db->setQuery($query);
 
 		$return = true;
