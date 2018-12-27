@@ -400,6 +400,17 @@ div.select2-container .select2-choice {
 	padding: 6px;
 }
 
+.view-register.layout-edit .select2-container .select2-choice > .select2-chosen {
+	padding: 0px 6px;
+}
+
+.select2-container .select2-choice .select2-arrow b {
+	background-position: 0 5px;
+}
+.select2-container .select2-choice abbr {
+	top: 12px;
+}
+
 div.select2-drop, div.select2-drop-active {
 	border: 1px solid #dddddd;
 }
