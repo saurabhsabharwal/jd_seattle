@@ -892,6 +892,7 @@ button.btn-wishlist .fa-heart {
 [id^="sell-modal-"].modal .modal-dialog,
 [id*=" sell-modal-"].modal .modal-dialog {
 	max-width: 100%;
+	margin: 0 auto;
 }
 .product_quickview {
 	padding: 3px 20px !important;
