@@ -494,7 +494,8 @@ input.item-quantity {
 
 .cart-items-table .cart-item-prices li {
 	float: left;
-	width: 120px;
+	width: auto;
+	margin: 0 10px;
 }
 
 .cart-items-table .cart-prices {
