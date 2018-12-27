@@ -896,3 +896,21 @@ button.btn-wishlist .fa-heart {
 .product_quickview {
 	padding: 3px 20px !important;
 }
+
+.view-profile .profile fieldset legend {
+	margin-bottom: 20px;
+	padding-bottom: 5px;
+	border-bottom: 1px solid #ddd;
+}
+
+@media only screen and (min-width: 992px) {
+	.view-profile .profile fieldset .control-group {
+		margin-bottom: 15px;
+		width: 50%;
+		float: left;
+	}
+}
+
+.view-profile .profile .btn-group {
+	margin-left: 5px;
+}
