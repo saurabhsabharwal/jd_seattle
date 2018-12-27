@@ -40,6 +40,7 @@ $template->loadTemplateCSS('custom.css');
       <meta name="HandheldFriendly" content="true" />
       <meta name="apple-mobile-web-app-capable" content="YES" />
       <link rel="stylesheet" href="https://use.fontawesome.com/releases/v<?php echo AstroidFrameworkConstants::$fontawesome_version; ?>/css/all.css" >
+	   <link rel="stylesheet" href="templates/tpl_jdseattle/css/com_sellacious/accordion.css">
    <jdoc:include type="head" />
    <?php
    /*
@@ -99,6 +100,7 @@ $template->loadTemplateCSS('custom.css');
    }
    ?>
 <jdoc:include type="modules" name="debug" />
+<jdoc:include type="message" />
 <?php $template->body(); ?>
 </body>
 </html>
