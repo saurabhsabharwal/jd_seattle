@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS `#__action_logs_extensions` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `#__action_logs_extensions` (`id`, `extension`) VALUES
+ INSERT INTO `#__action_logs_extensions` (`id`, `extension`) VALUES
 (1, 'com_banners'),
 (2, 'com_cache'),
 (3, 'com_categories'),
