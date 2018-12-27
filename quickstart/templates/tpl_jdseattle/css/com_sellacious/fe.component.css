@@ -807,6 +807,13 @@ button.btn-wishlist .fa-heart {
 	.pagination-footer .pagination.sell-pagination {
 		text-align: center;
 	}
+	#profile_accordion .accordion-group .accordion-inner table.timings-table select {
+		width: 96% !important;
+		display: block;
+		padding: 0px;
+		margin: 0px 1%;
+		max-width: unset;
+	}
 }
 @media (max-width: 579px) {
 	.right-xxs {
@@ -844,7 +851,8 @@ button.btn-wishlist .fa-heart {
 	width: 46%;
 	display: inline-block;
 	padding: 0px;
-	margin: 0px 5px;
+	margin: 0px 1%;
+	max-width: unset;
 }
 
 #modal-cart {

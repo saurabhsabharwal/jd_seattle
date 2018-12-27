@@ -771,6 +771,10 @@ ul.item-errors {
 	padding: 5px 35px;
 }
 
+.control-group .controls .btn-group-toggle .btn:last-child {
+	margin-left: 1px;
+}
+
 #cart-aio-payment #payment_accordion .accordion-group {
 	border-radius: 0;
 }
