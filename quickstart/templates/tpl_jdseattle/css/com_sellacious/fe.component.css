@@ -308,9 +308,8 @@ div.modal .modal-body {
 #modal-cart .modal-body iframe,
 div.modal .modal-body iframe {
 	width: 100%;
-	max-height: none;
 	border: 0 !important;
-	max-height:400px;
+	max-height:400px !important;
 }
 #modal-cart .modal-footer {
 	display: none;
