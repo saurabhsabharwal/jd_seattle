@@ -72,11 +72,11 @@ JText::script('COM_SELLACIOUS');
 			<?php if ($this->helper->config->get('product_rating') && (in_array('product_modal', $rating_display))): ?>
 				<?php $stars = round($item->get('rating.rating', 0) * 2); ?>
 				<div class="product-rating rating-stars star-<?php echo $stars ?>"><?php echo number_format($item->get('rating.rating', 0), 1) ?></div>
+				<hr class="isolate"/>
 			<?php endif; ?>
 		</div>
 
 		<div class="clearfix"></div>
-		<hr class="isolate"/>
 		<div class="sell-row">
 			<?php
 			$showlisting = $this->helper->config->get('show_allowed_listing_type');
@@ -231,15 +231,14 @@ JText::script('COM_SELLACIOUS');
 
 		<?php if ($item->get('introtext')): ?>
 			<blockquote class="introtext"><?php echo $item->get('introtext') ?></blockquote>
+			<hr class="isolate"/>
 		<?php endif; ?>
 
-		<hr class="isolate"/>
 		<?php //echo $this->loadTemplate('toolbar'); ?>
 
 		<div class="clearfix"></div>
 
 		<?php if ($item->get('price_display') == 0): ?>
-			<hr class="isolate"/>
 			<div id="buy-now-box" class="sell-row">
 				<?php $btnClass = $item->get('stock_capacity') > 0 ? 'btn-add-cart' : ' disabled'; ?>
 				<?php if ($allow_checkout && in_array('product_modal', $cart_pages)): ?>
