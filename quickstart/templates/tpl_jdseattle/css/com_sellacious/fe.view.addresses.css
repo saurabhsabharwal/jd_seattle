@@ -8,7 +8,7 @@
 
 #addresses .address-item {
 	text-align: left;
-	display: table-cell;
+	display: inline-block;
 	position: relative;
 	min-width: 240px;
 	width: 240px;
