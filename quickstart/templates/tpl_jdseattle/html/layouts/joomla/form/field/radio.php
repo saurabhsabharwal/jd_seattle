@@ -56,7 +56,7 @@ $alt    = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $name);
 
 $class = str_replace('btn-group-yesno', 'btn-group-toggle', $class);
 ?>
-<fieldset data-toggle="buttons" id="<?php echo $id; ?>" class="<?php echo trim($class . ' radio'); ?>"
+<fieldset <?php echo (strpos($class, 'btn-group-toggle') !== false) ? ' data-toggle="buttons" ' : '' ?> id="<?php echo $id; ?>" class="<?php echo trim($class . ' radio'); ?>"
 	<?php echo $disabled ? 'disabled' : ''; ?>
 	<?php echo $required ? 'required aria-required="true"' : ''; ?>
 	<?php echo $autofocus ? 'autofocus' : ''; ?>>
@@ -65,9 +65,9 @@ $class = str_replace('btn-group-yesno', 'btn-group-toggle', $class);
 		<?php foreach ($options as $i => $option) : ?>
 			<?php
 				// Initialize some option attributes.
-				$checked  = ((string) $option->value === $value) ? 'checked="checked"' : '';
-				$optionClass    = !empty($option->class) ? 'class="btn ' . $option->class . '"' : ' class="btn btn-secondary" ';
-				$disabled = !empty($option->disable) || ($disabled && !$checked) ? 'disabled' : '';
+				$checked  		= ((string) $option->value === $value) ? 'checked="checked"' : '';
+				$optionClass  	= !empty($option->class) ? 'class="btn ' . $option->class . '"' : (strpos($class, 'btn-group-toggle') !== false) ? ' class="btn btn-secondary" ' : '';
+				$disabled 		= !empty($option->disable) || ($disabled && !$checked) ? 'disabled' : '';
 
 				// Initialize some JavaScript option attributes.
 				$onclick    = !empty($option->onclick) ? 'onclick="' . $option->onclick . '"' : '';
