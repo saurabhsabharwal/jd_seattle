@@ -127,11 +127,10 @@ div.cart-aio > div.legend {
 }
 
 .address-item .address-action {
-	display: none !important;
+	display: none;
 	position: absolute;
 	z-index: 2;
 	text-align: right;
-	display:block;
 }
 
 .address-item .address-action .btn:first-child {
@@ -252,8 +251,17 @@ div[id^="address-form"] textarea {
 }
 
 #address-billing-text, #address-shipping-text {
-	margin-bottom: 10px;
+	margin: 15px 1%;
 	padding: 0;
+	width: 48%;
+	float: left;
+}
+
+@media only screen and (max-width: 762px) {
+	#address-billing-text, #address-shipping-text {
+		width: 100%;
+		float: unset;
+	}
 }
 
 #address-viewer .address_label {

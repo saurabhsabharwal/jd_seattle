@@ -158,7 +158,7 @@ $cartValid = $cart->validate($errors, $iErrors, true);
 					<?php endif; ?>
 				</ul>
 			</td>
-			<td colspan="2"><strong><?php echo $helper->currency->display($totals->get('items.sub_total'), $g_currency, $c_currency, true); ?></strong></td>
+			<td colspan="2" class="text-right"><strong><?php echo $helper->currency->display($totals->get('items.sub_total'), $g_currency, $c_currency, true); ?></strong></td>
 		</tr>
 		<tr>
 			<td></td>
