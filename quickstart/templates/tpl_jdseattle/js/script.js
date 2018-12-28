@@ -505,7 +505,12 @@
             deviceBreakpoint(false);
       };
 
-      $(docReady);
+    //  Tooltip dispose
+	$('*').click(function () {
+        $('*').tooltip('dispose');
+    });
+
+	$(docReady);
       $(window).on('load', winLoad);
       $(window).on('resize', winResize);
       $(window).on('scroll', winScroll);
