@@ -3,6 +3,7 @@
 	margin: 0;
 	clear: both;
 	border-spacing: 5px;
+	padding: 0;
 }
 
 #addresses .address-item {
