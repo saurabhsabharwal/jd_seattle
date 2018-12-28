@@ -997,3 +997,7 @@ div.select2-container .select2-choice {
 .modal.show .modal-dialog{
 	margin: 0 auto;
 }
+
+.controls fieldset:not(.btn-group-toggle) label:first-child {
+	margin-right: 10px;
+}
