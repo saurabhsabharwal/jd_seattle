@@ -156,7 +156,7 @@ div.modal .modal-body {
 	padding: 10px 0 0 0;
 	width: auto;
 	overflow-x: auto;
-	max-height: 390px;
+	max-height: 390px !important;
 }
 
 div.modal .modal-content {
@@ -992,4 +992,8 @@ div.select2-container .select2-choice {
 }
 .view-addresses .select2-drop-mask {
 	z-index: 9998;
+}
+
+.modal.show .modal-dialog{
+	margin: 0 auto;
 }
