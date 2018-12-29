@@ -4,15 +4,16 @@
 	clear: both;
 	border-spacing: 5px;
 	padding: 0;
+	overflow-x: auto;
 }
 
 #addresses .address-item {
 	text-align: left;
-	display: inline-block;
+	display: table-cell;
 	position: relative;
 	min-width: 240px;
 	width: 240px;
-	min-height: 210px;
+	min-height: 180px;
 	border: 2px solid #d1d1d1;
 	border-radius: 5px;
 	padding: 5px;
