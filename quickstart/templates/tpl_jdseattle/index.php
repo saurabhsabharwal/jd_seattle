@@ -100,7 +100,6 @@ $template->loadTemplateCSS('custom.css');
    }
    ?>
 <jdoc:include type="modules" name="debug" />
-<jdoc:include type="message" />
 <?php $template->body(); ?>
 </body>
 </html>
