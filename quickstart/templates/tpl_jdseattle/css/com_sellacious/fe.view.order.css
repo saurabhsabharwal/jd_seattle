@@ -49,8 +49,15 @@ div.fieldset {
 	font-weight: bold;
 	color: #000000;
 	line-height: 1.8;
-	margin-bottom: 10px;
+	display: block;
 	width: 230px;
+}
+
+.address_mobile,
+.address_address,
+.address_landmark,
+.address_country {
+	display: block;
 }
 
 .address_mobile i.fa {
