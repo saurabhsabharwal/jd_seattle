@@ -114,7 +114,7 @@ jQuery(function ($) {
 			}).fail(function (jqXHR) {
 				$this.element('boxes_container').html('<a class="btn btn-small pull-right btn-refresh btn-default margin-5">' +
 					'<i class="fa fa-refresh"></i> </a><div class="clearfix"></div>');
-				Joomla.renderMessages({warning: ['Request failed due to unknown error.']});
+				// Joomla.renderMessages({warning: ['Request failed due to unknown error.']});
 				console.log(jqXHR.responseText);
 			});
 		},
