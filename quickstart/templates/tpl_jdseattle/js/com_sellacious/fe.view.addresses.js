@@ -80,6 +80,7 @@ jQuery(function ($) {
 
 			$this.element('boxes_container').html('<br><h3>Please wait&hellip;</h3>').removeClass('hidden');
 			$this.element('modals_container').html('');
+			$('.modal-backdrop').remove();
 
 			var data = {
 				option: 'com_sellacious',
@@ -113,8 +114,8 @@ jQuery(function ($) {
 				}
 			}).fail(function (jqXHR) {
 				$this.element('boxes_container').html('<a class="btn btn-small pull-right btn-refresh btn-default margin-5">' +
-					'<i class="fa fa-refresh"></i> </a><div class="clearfix"></div>');
-				// Joomla.renderMessages({warning: ['Request failed due to unknown error.']});
+				'<i class="fa fa-refresh"></i> </a><div class="clearfix"></div>');
+				Joomla.renderMessages({warning: ['Request failed due to unknown error.']});
 				console.log(jqXHR.responseText);
 			});
 		},
@@ -221,11 +222,9 @@ jQuery(function ($) {
 					$this.container.find('#address-form-' + address.id).modal('hide');
 					Joomla.renderMessages({warning: [response.message]});
 				} else if (response.status === 1035) { // Saved
-					$this.container.find('#address-form-' + address.id).on("hidden.bs.modal", function () {
-						$this.loadEditor();
-					});
 					$this.container.find('#address-form-' + address.id).modal('hide');
 					Joomla.renderMessages({success: [response.message]});
+					$this.loadEditor();
 					if (typeof callback === 'function') callback();
 				} else {
 					alert(response.message);
